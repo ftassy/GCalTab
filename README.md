@@ -26,7 +26,7 @@ These permissions are needed to allow GCalTab to "manage" tabs for these three d
 * execute scripts on these tabs
 
 Tabs are open for obvious reason: that's the aim of the add-on.  
-The only script that can be executed on these tabs is the [DarkReader](https://darkreader.org/) algorithm, that has a strict [privacy policy](https://darkreader.org/privacy/). It will be executed only if you use the Dark mode.
+The only script that can be executed on these tabs is the [DarkReader](https://darkreader.org/) algorithm, that has a strict [privacy policy](https://darkreader.org/privacy/).  
 
 Of course, Google Calendar works as it would do in your web browser, including regarding data collection.
 

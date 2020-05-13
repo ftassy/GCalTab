@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "GCalTab",
     "description": "Google Calendar one tab away!",
-    "version": "0.2",
+    "version": "0.3",
     "author": "Florent Tassy",
     "browser_specific_settings": {
         "gecko": {
@@ -34,7 +34,8 @@
                 "*://google.com/calendar*"
             ],
             "js": [
-                "scripts/calendar.js"
+                "js/darkreader/darkreader.js",
+                "js/calendar.js"
             ]
         }
     ]
