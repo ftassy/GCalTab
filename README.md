@@ -1,0 +1,2 @@
+# GCalTab
+Thunderbird add-on
