@@ -36,8 +36,9 @@ Never.
 ### How do I stay connected when I re-open Thunderbird ?
 If you wish to stay connected to Google Calendar, you will have to allow cookies.  
 The cookies menu can be access as follow in Thunderbird:    
-_Linux/Windows_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > Web Content section.  
-_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > Web Content section.  
+_GNU/Linux_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_Windows_ : "Tools" > "Options" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 You will have to allow and keep cookies for these three domains:
 * accounts.google.com
 * calendar.google.com
@@ -46,8 +47,9 @@ You will have to allow and keep cookies for these three domains:
 ### How do I disconnect from a Google Calendar account ?
 If you use the "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird.  
 In order to properly disconnect Thunderbird from Google Calendar, you need to delete three cookies.  
-_Linux/Windows_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > Web Content section.  
-_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > Web Content section.  
+_GNU/Linux_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_Windows_ : "Tools" > "Options" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 Delete the cookies for these three domains:
 * accounts.google.com
 * calendar.google.com
@@ -62,4 +64,13 @@ The add-on can be built by running the following command from its root directory
 web-ext build
 ```
 
+## Legal notice
+Thunderbird is a registered trademark of the Mozilla Foundation.  
+Google is a registered trademark of Google LLC.  
+GNU is a registered trademark of the Free Software Foundation.  
+Linux is a registered trademark of Linus Torvalds.  
+Windows is a registered trademark of Microsoft Corporation.  
+macOS is a registered trademark of Apple Inc.  
 
+The above-mentionned trademarks are only used to refer to products.  
+GCalTab and its developper are not affiliated, sponsered nor endorsed by any of the above-mentionned organizations.
