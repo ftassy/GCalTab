@@ -37,7 +37,7 @@ Never.
 If you wish to stay connected to Google Calendar, you will have to allow cookies.  
 The cookies menu can be access as follow in Thunderbird:    
 _GNU/Linux_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
-_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_macOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 _Windows_ : "Tools" > "Options" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 You will have to allow and keep cookies for these three domains:
 * accounts.google.com
@@ -48,7 +48,7 @@ You will have to allow and keep cookies for these three domains:
 If you use the "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird.  
 In order to properly disconnect Thunderbird from Google Calendar, you need to delete three cookies.  
 _GNU/Linux_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
-_MacOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
+_macOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 _Windows_ : "Tools" > "Options" > "Privacy" or "Privacy and Security" > "Web Content" section.  
 Delete the cookies for these three domains:
 * accounts.google.com
@@ -74,3 +74,5 @@ macOS is a registered trademark of Apple Inc.
 
 The above-mentionned trademarks are only used to refer to products.  
 GCalTab and its developper are not affiliated, sponsered nor endorsed by any of the above-mentionned organizations.
+
+GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)

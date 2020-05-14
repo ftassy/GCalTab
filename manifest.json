@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "GCalTab",
     "description": "Google Calendar one tab away!",
-    "version": "0.3",
+    "version": "0.4",
     "author": "Florent Tassy",
     "applications": {
         "gecko": {
