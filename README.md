@@ -1,7 +1,10 @@
 # GCalTab 
-GCalTab is a Thunderbird add-on that opens a Thunderbird tab on Google Calendar website.
+GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab.
 It features a beautiful dark mode thanks to the [DarkReader](https://darkreader.org/) algorithm.  
-![GCalTab logo](icons/gcaltab-96px.png)
+
+******************
+![GCalTab logo](icons/gcaltab-48px.png) **Get it from [addons.thunderbird.net](https://addons.thunderbird.net/thunderbird/downloads/latest/gcaltab/platform:2/addon-987833-latest.xpi?src=search)** ![GCalTab logo](icons/gcaltab-48px.png)
+******************
 
 ## How does it work ?
 Once the add-on is installed, a new icon appears in Thunderbird Mail toolbar:
@@ -55,13 +58,18 @@ Delete the cookies for these three domains:
 * calendar.google.com
 * google.com
 
-## Build
+## Build from source
 Prerequisite:  
 Install [web-ext](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/).  
 
 The add-on can be built by running the following command from its root directory:  
 ```
 web-ext build
+```
+
+More specifically, if you have cloned this repository, you can run:
+```
+web-ext build --ignore-files=images README.md
 ```
 
 ## Legal notice
@@ -72,7 +80,8 @@ Linux is a registered trademark of Linus Torvalds.
 Windows is a registered trademark of Microsoft Corporation.  
 macOS is a registered trademark of Apple Inc.  
 
-The above-mentionned trademarks are only used to refer to products.  
-GCalTab and its developper are not affiliated, sponsered nor endorsed by any of the above-mentionned organizations.
+The above-mentioned trademarks are only used to refer to products.  
+GCalTab and its developer are not affiliated, sponsored nor endorsed by any of the above-mentioned organizations.
 
+## Acknowledgments
 GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
