@@ -11,7 +11,7 @@ Once the add-on is installed, a new icon appears in Thunderbird Mail toolbar:
 ![Thunderbird Mail toolbar](images/GCalTab_browser_action.png)
 
 Click on it to see GCalTab menu:  
-![Thunderbird menu](images/GCalTab_popup.png)
+<div align="center">![Thunderbird menu](images/GCalTab_popup.png)</div>
 
 Click on "Open" to open the Google Calendar tab. You can switch on/off the "Dark" button to activate DarkReader on the Google Calendar tab.
 
