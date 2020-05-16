@@ -7,7 +7,7 @@ It features a beautiful dark mode thanks to the [DarkReader](https://darkreader.
 ******************
 <p align="center">
     <strong>Get it from<br>
-    <a href="addons.thunderbird.net">addons.thunderbird.net</a>
+    <a href="https://addons.thunderbird.net/fr/thunderbird/addon/gcaltab">addons.thunderbird.net</a>
     </strong>
 </p>
 
