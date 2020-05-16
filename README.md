@@ -1,4 +1,5 @@
 <p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/icons/gcaltab.png" alt="GCalTab icon menu"></p>
+
 # GCalTab 
 GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab.
 It features a beautiful dark mode thanks to the [DarkReader](https://darkreader.org/) algorithm.  
