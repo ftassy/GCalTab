@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "GCalTab",
     "description": "Google Calendar one tab away!",
-    "version": "0.4",
+    "version": "0.5",
     "author": "Florent Tassy",
     "applications": {
         "gecko": {
@@ -14,7 +14,8 @@
         "*://calendar.google.com/*",
         "*://accounts.google.com/*",
         "*://google.com/calendar*",
-        "storage"
+        "storage",
+        "tabs"
     ],
     "browser_action": {
         "default_popup": "popup.html",
