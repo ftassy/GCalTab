@@ -4,14 +4,21 @@
 // Retrieve buttons
 let gCalButton = document.getElementById("gcal");
 let modeSwitcher = document.getElementById("switch");
+let signOutButton = document.getElementById("signout");
 
 // Initialize the switch button per local storage value
 let gettingItem = browser.storage.local.get("darkModeGCalTab");
 gettingItem.then(onGot, onError);
 
+// Initialize number of active tabs
+let nbTabs = null;
+
 // Add click listeners to page
-gCalButton.addEventListener("click", openTab);
+gCalButton.addEventListener("click", openGoogleCalendar);
 modeSwitcher.addEventListener("click", switchMode);
+signOutButton.addEventListener("click", disconnect);
+
+keepTabUnique();
 
 /******************************************************/
 /* Function definitions */
@@ -20,13 +27,60 @@ modeSwitcher.addEventListener("click", switchMode);
 /** Function that opens a Google Calendar tab.
  * Triggered when "Open" button in clicked
  * */
-function openTab() {
-    createProperties = {
+function openOrUpdateTab(url) {
+    tabProperties = {
         active: true,
-        url: "https://www.google.com/calendar",
+        url: url,
     };
-    browser.tabs.create(createProperties);
+
+    if (nbTabs === null) {
+        console.log(nbTabs);
+        browser.tabs.create(tabProperties);
+        keepTabUnique();
+    } else {
+        console.log(nbTabs);
+        browser.tabs.update(nbTabs, tabProperties);
+        keepTabUnique();
+    }
 }
+
+function openGoogleCalendar() {
+    openOrUpdateTab("https://www.google.com/calendar");
+}
+
+function disconnect() {
+    openOrUpdateTab("https://accounts.google.com/Logout?continue=https://calendar.google.com/");
+}
+
+//***
+
+function keepTabUnique() {
+    const urlGCalTab = [
+        "https://calendar.google.com/*",
+        "https://accounts.google.com/*",
+        "https://google.com/calendar*"
+    ];
+    
+    let querying = browser.tabs.query({url: urlGCalTab, currentWindow: true});
+    querying.then(retrieveGCalTab, onError);
+}
+
+
+function retrieveGCalTab(tabs) {
+    if (tabs.length >= 1) {
+        for (let tab of tabs) {
+            nbTabs = tab.id;
+          }
+    } else {
+        return nbTabs = null;
+    }
+}
+  
+function onError(error) {
+    console.log(`Error: ${error}`);
+}
+
+//***
 
 /** Function that synchronizes the switch button with
  * the dark mode value in local storage.
