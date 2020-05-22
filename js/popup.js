@@ -34,7 +34,6 @@ function openTab() {
  * */
 function onGot(item) {
     for (let key in item) {
-        console.log(key, "=", item[key]);
         if (key === "darkModeGCalTab") {
             let darkMode = item[key];
             modeSwitcher.checked = darkMode;
@@ -68,7 +67,6 @@ function switchMode() {
     if (!buttonValue) {
         setLightMode();
     }
-    console.log("switchMode executed...");
 }
 
 /** Function that sets the popup to its light mode
