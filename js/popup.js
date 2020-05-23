@@ -44,43 +44,41 @@ function openOrUpdateTab(url) {
     }
 }
 
+/** Wraps openOrUpdateTab for opening the tab */
 function openGoogleCalendar() {
     openOrUpdateTab("https://www.google.com/calendar");
 }
 
+/** Wraps openOrUpdateTab for disconnecting for the
+ * account
+ * */
 function disconnect() {
     openOrUpdateTab("https://accounts.google.com/Logout?continue=https://calendar.google.com/");
 }
 
-//***
-
+/** Function that looks for an open Google Calendar
+ * tab in Thunderbird
+ * */
 function keepTabUnique() {
-    const urlGCalTab = [
-        "https://calendar.google.com/*",
-        "https://accounts.google.com/*",
-        "https://google.com/calendar*"
-    ];
-    
-    let querying = browser.tabs.query({url: urlGCalTab, currentWindow: true});
+    const urlGCalTab = ["https://calendar.google.com/*", "https://accounts.google.com/*", "https://google.com/calendar*"];
+
+    let querying = browser.tabs.query({ url: urlGCalTab, currentWindow: true });
     querying.then(retrieveGCalTab, onError);
 }
 
-
+/** Function executed after a Google Calendar tab is
+ * seeked. If there is one, it returns the corresponding
+ * tab id. If there is none, it returns null.
+ * */
 function retrieveGCalTab(tabs) {
     if (tabs.length >= 1) {
         for (let tab of tabs) {
             nbTabs = tab.id;
-          }
+        }
     } else {
-        return nbTabs = null;
+        return (nbTabs = null);
     }
 }
-  
-function onError(error) {
-    console.log(`Error: ${error}`);
-}
-
-//***
 
 /** Function that synchronizes the switch button with
  * the dark mode value in local storage.
@@ -102,7 +100,9 @@ function onGot(item) {
 }
 
 /** Function that log error in console.
- * Called if local storage value retrieve succeeded.
+ * Called if local storage value retrieve or if tab
+ * scanning to find a Google Calndar tab in Thunderbird
+ * failed.
  * */
 function onError(error) {
     console.log(`Error: ${error}`);
