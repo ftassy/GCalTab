@@ -20,13 +20,23 @@ Once the add-on is installed, a new icon appears in Thunderbird Mail toolbar:
 Click on it to see GCalTab menu:  
 <p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/images/GCalTab_popup.png" alt="Thunderbird menu"></p>
 
-Click on "Open" to open the Google Calendar tab. You can switch on/off the "Dark" button to activate DarkReader on the Google Calendar tab.
+Click on "Open" to open the Google Calendar tab:  
+<p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/images/Google_Calendar_dark.png" alt="Thunderbird menu"></p>
+
+You can switch on/off the "Dark" button to activate DarkReader on the Google Calendar tab.
+
+### There are plenty of add-ons that open a Google Calendar tab in Thunderbird. What does GCalTab bring ?
+GCalTab brings two things that are often missed in other add-ons:  
+* The possibility to switch to a dark mode. Save you eyes !
+* The possibility to disconnect - reconnect from GCalTab menu. Especially useful if you have several Google Calendar accounts !
 
 ### What permissions are needed ?
 GCalTab will need to access your data for:  
 * accounts.google.com  
 * calendar.google.com  
 * google.com  
+
+In addition, GCalTab will need to access Thunderbird tabs to maintain a unique tab.
 
 ### Does it means that GCalTab collects my data ?
 No, GCalTab simply opens tabs in Thunderbird, exactly as it would be done in a web browser.  
@@ -38,9 +48,9 @@ These permissions are needed to allow GCalTab to "manage" tabs for these three d
 Tabs are open for obvious reason: that's the aim of the add-on.  
 The only script that can be executed on these tabs is the [DarkReader](https://darkreader.org/) algorithm, that has a strict [privacy policy](https://darkreader.org/privacy/).  
 
-Of course, Google Calendar works as it would do in your web browser, including regarding data collection.
+Of course, Google Calendar works as it would do in your web browser, including regarding data collection.  
 
-### So GCalTab will never transmit my data to anyone ?
+### So GCalTab will never collect my data ?
 Never.
 
 ### How do I stay connected when I re-open Thunderbird ?
@@ -56,14 +66,8 @@ You will have to allow and keep cookies for these three domains:
 
 ### How do I disconnect from a Google Calendar account ?
 If you use the "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird.  
-In order to properly disconnect Thunderbird from Google Calendar, you need to delete three cookies.  
-_GNU/Linux_ : "Edit" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
-_macOS_ : "Thunderbird" > "Preferences" > "Privacy" or "Privacy and Security" > "Web Content" section.  
-_Windows_ : "Tools" > "Options" > "Privacy" or "Privacy and Security" > "Web Content" section.  
-Delete the cookies for these three domains:
-* accounts.google.com
-* calendar.google.com
-* google.com
+
+**Since version 0.5**, it is possible to sign out GCalTab menu with the "Sign out" button.  
 
 ## Build from source
 Prerequisite:  
