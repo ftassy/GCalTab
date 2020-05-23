@@ -67,7 +67,7 @@ You will have to allow and keep cookies for these three domains:
 ### How do I disconnect from a Google Calendar account ?
 If you use the "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird.  
 
-**Since version 0.5**, it is possible to sign out GCalTab menu with the "Sign out" button.  
+**Since version 0.5**, it is possible to sign out from GCalTab menu with the "Sign out" button.  
 
 ## Build from source
 Prerequisite:  
