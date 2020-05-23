@@ -27,7 +27,7 @@ You can switch on/off the "Dark" button to activate DarkReader on the Google Cal
 
 ### There are plenty of add-ons that open a Google Calendar tab in Thunderbird. What does GCalTab bring ?
 GCalTab brings two things that are often missed in other add-ons:  
-* The possibility to switch to a dark mode. Save you eyes !
+* The possibility to switch to a dark mode. Save your eyes !
 * The possibility to disconnect - reconnect from GCalTab menu. Especially useful if you have several Google Calendar accounts !
 
 ### What permissions are needed ?
