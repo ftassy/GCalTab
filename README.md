@@ -95,3 +95,9 @@ GCalTab and its developer are not affiliated, sponsored nor endorsed by any of t
 
 ## Acknowledgments
 GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
+
+
+## Changelog
+0.6 -> upgrade to DarkReader v4.9.10  
+0.5 -> addition of the disconnexion button  
+0.4 -> first release  

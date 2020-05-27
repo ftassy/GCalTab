@@ -1,5 +1,5 @@
 /**
- * Dark Reader v4.9.2
+ * Dark Reader v4.9.10
  * https://darkreader.org/
  */
 
@@ -72,29 +72,54 @@
         }
     }
 
+    function __values(o) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+        if (m) return m.call(o);
+        return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+    }
+
+    function __read(o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    }
+
+    function __spread() {
+        for (var ar = [], i = 0; i < arguments.length; i++)
+            ar = ar.concat(__read(arguments[i]));
+        return ar;
+    }
+
     function isFirefox() {
         return navigator.userAgent.includes('Firefox');
     }
+    function isWindows() {
+        if (typeof navigator === 'undefined') {
+            return null;
+        }
+        return navigator.platform.toLowerCase().startsWith('win');
+    }
     function isMacOS() {
+        if (typeof navigator === 'undefined') {
+            return null;
+        }
         return navigator.platform.toLowerCase().startsWith('mac');
-    }
-    function isDeepSelectorSupported() {
-        try {
-            document.querySelector('x /deep/ x');
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
-    }
-    function isHostSelectorSupported() {
-        try {
-            document.querySelector(':host x');
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
     }
     function isDefinedSelectorSupported() {
         try {
@@ -256,7 +281,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            sendMessage.apply(void 0, args);
+            sendMessage.apply(void 0, __spread(args));
             nativeSendMessage_1.apply(chrome.runtime, args);
         };
     }
@@ -273,7 +298,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            addMessageListener.apply(void 0, args);
+            addMessageListener.apply(void 0, __spread(args));
             nativeAddListener_1.apply(chrome.runtime.onMessage, args);
         };
     }
@@ -288,14 +313,79 @@
         dynamicTheme: 'dynamicTheme',
     };
 
+    var DEFAULT_THEME = {
+        mode: 1,
+        brightness: 100,
+        contrast: 100,
+        grayscale: 0,
+        sepia: 0,
+        useFont: false,
+        fontFamily: isMacOS() ? 'Helvetica Neue' : isWindows() ? 'Segoe UI' : 'Open Sans',
+        textStroke: 0,
+        engine: ThemeEngines.dynamicTheme,
+        stylesheet: '',
+        scrollbarColor: isMacOS() ? '' : 'auto',
+        selectionColor: 'auto',
+    };
+
+    function isArrayLike(items) {
+        return items.length != null;
+    }
+    function forEach(items, iterator) {
+        var e_1, _a;
+        if (isArrayLike(items)) {
+            for (var i = 0, len = items.length; i < len; i++) {
+                iterator(items[i]);
+            }
+        }
+        else {
+            try {
+                for (var items_1 = __values(items), items_1_1 = items_1.next(); !items_1_1.done; items_1_1 = items_1.next()) {
+                    var item = items_1_1.value;
+                    iterator(item);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (items_1_1 && !items_1_1.done && (_a = items_1.return)) _a.call(items_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+    }
+    function push(array, addition) {
+        forEach(addition, function (a) { return array.push(a); });
+    }
+    function toArray(items) {
+        var results = [];
+        for (var i = 0, len = items.length; i < len; i++) {
+            results.push(items[i]);
+        }
+        return results;
+    }
+
     function parseURL(url) {
         var a = document.createElement('a');
         a.href = url;
         return a;
     }
+    function backwards($base, $relative) {
+        var b = parseURL($base);
+        var pathParts = b.pathname.split('/');
+        pathParts = pathParts.concat.apply(pathParts, __spread($relative.split('/'))).filter(function (p) { return p; });
+        var backwardIndex;
+        while ((backwardIndex = pathParts.indexOf('..')) > 0) {
+            pathParts.splice(backwardIndex - 1, 2);
+        }
+        return pathParts;
+    }
     function getAbsoluteURL($base, $relative) {
         if ($relative.match(/^.*?\/\//) || $relative.match(/^data\:/)) {
             if ($relative.startsWith('//')) {
+                if ($relative.includes('..')) {
+                    return "" + location.protocol + backwards($base, $relative).join('/');
+                }
                 return "" + location.protocol + $relative;
             }
             return $relative;
@@ -305,11 +395,12 @@
             var u_1 = parseURL(b.protocol + "//" + b.host + $relative);
             return u_1.href;
         }
-        var pathParts = b.pathname.split('/').concat($relative.split('/')).filter(function (p) { return p; });
-        var backwardIndex;
-        while ((backwardIndex = pathParts.indexOf('..')) > 0) {
-            pathParts.splice(backwardIndex - 1, 2);
+        var pathParts = b.pathname.split('/');
+        var lastPathPart = pathParts[pathParts.length - 1];
+        if (lastPathPart.match(/\.[a-z]+$/i)) {
+            pathParts.pop();
         }
+        pathParts = backwards($base, $relative);
         var u = parseURL(b.protocol + "//" + b.host + "/" + pathParts.join('/'));
         return u.href;
     }
@@ -328,8 +419,7 @@
     }
 
     function iterateCSSRules(rules, iterate) {
-        Array.from(rules)
-            .forEach(function (rule) {
+        forEach(rules, function (rule) {
             if (rule instanceof CSSMediaRule) {
                 var media = Array.from(rule.media);
                 if (media.includes('screen') || media.includes('all') || !(media.includes('print') || media.includes('speech'))) {
@@ -353,7 +443,7 @@
         });
     }
     function iterateCSSDeclarations(style, iterate) {
-        Array.from(style).forEach(function (property) {
+        forEach(style, function (property) {
             var value = style.getPropertyValue(property).trim();
             if (!value) {
                 return;
@@ -407,7 +497,7 @@
     function replaceCSSFontFace($css) {
         return $css.replace(fontFaceRegex, '');
     }
-    var varRegex = /var\((--[^\s,]+),?\s*([^\(\)]*(\([^\(\)]*\)[^\(\)]*)*\s*)\)/g;
+    var varRegex = /var\((--[^\s,\(\)]+),?\s*([^\(\)]*(\([^\(\)]*\)[^\(\)]*)*\s*)\)/g;
     function replaceCSSVariables(value, variables) {
         var missing = false;
         var result = value.replace(varRegex, function (match, name, fallback) {
@@ -446,11 +536,11 @@
                 pending = true;
             }
             else {
-                callback.apply(void 0, lastArgs);
+                callback.apply(void 0, __spread(lastArgs));
                 frameId = requestAnimationFrame(function () {
                     frameId = null;
                     if (pending) {
-                        callback.apply(void 0, lastArgs);
+                        callback.apply(void 0, __spread(lastArgs));
                         pending = false;
                     }
                 });
@@ -507,15 +597,17 @@
     function removeNode(node) {
         node && node.parentNode && node.parentNode.removeChild(node);
     }
-    function watchForNodePosition(node, _a) {
-        var _b = _a.onRestore, onRestore = _b === void 0 ? Function.prototype : _b, _c = _a.watchParent, watchParent = _c === void 0 ? true : _c, _d = _a.watchSibling, watchSibling = _d === void 0 ? false : _d;
+    function watchForNodePosition(node, mode, onRestore) {
+        if (onRestore === void 0) { onRestore = Function.prototype; }
         var MAX_ATTEMPTS_COUNT = 10;
         var ATTEMPTS_INTERVAL = getDuration({ seconds: 10 });
         var prevSibling = node.previousSibling;
         var parent = node.parentNode;
         if (!parent) {
-            logWarn('Unable to watch for node position: parent element not found', node, prevSibling);
-            return { stop: Function.prototype };
+            throw new Error('Unable to watch for node position: parent element not found');
+        }
+        if (mode === 'prev-sibling' && !prevSibling) {
+            throw new Error('Unable to watch for node position: there is no previous sibling');
         }
         var attempts = 0;
         var start = null;
@@ -534,20 +626,33 @@
                 start = now;
                 attempts = 1;
             }
-            if (prevSibling && prevSibling.parentNode !== parent) {
-                logWarn('Unable to restore node position: sibling was removed', node, prevSibling, parent);
-                stop();
-                return;
+            if (mode === 'parent') {
+                if (prevSibling && prevSibling.parentNode !== parent) {
+                    logWarn('Unable to restore node position: sibling parent changed', node, prevSibling, parent);
+                    stop();
+                    return;
+                }
             }
-            logWarn('Node was removed, restoring it\'s position', node, prevSibling, parent);
+            if (mode === 'prev-sibling') {
+                if (prevSibling.parentNode == null) {
+                    logWarn('Unable to restore node position: sibling was removed', node, prevSibling, parent);
+                    stop();
+                    return;
+                }
+                if (prevSibling.parentNode !== parent) {
+                    logWarn('Style was moved to another parent', node, prevSibling, parent);
+                    updateParent(prevSibling.parentNode);
+                }
+            }
+            logWarn('Restoring node position', node, prevSibling, parent);
             parent.insertBefore(node, prevSibling ? prevSibling.nextSibling : parent.firstChild);
+            observer.takeRecords();
             onRestore && onRestore();
         });
         var observer = new MutationObserver(function () {
-            if ((watchParent && !node.parentNode) ||
-                (watchSibling && node.previousSibling !== prevSibling)) {
+            if ((mode === 'parent' && node.parentNode !== parent) ||
+                (mode === 'prev-sibling' && node.previousSibling !== prevSibling)) {
                 restore();
-                observer.takeRecords();
             }
         });
         var run = function () {
@@ -555,6 +660,12 @@
         };
         var stop = function () {
             observer.disconnect();
+            restore.cancel();
+        };
+        var updateParent = function (parentNode) {
+            parent = parentNode;
+            stop();
+            run();
         };
         run();
         return { run: run, stop: stop };
@@ -570,22 +681,155 @@
             iterateShadowNodes(node.shadowRoot, iterator);
         }
     }
+    function isDOMReady() {
+        return document.readyState === 'complete' || document.readyState === 'interactive';
+    }
+    var readyStateListeners = new Set();
+    function addDOMReadyListener(listener) {
+        readyStateListeners.add(listener);
+    }
+    function removeDOMReadyListener(listener) {
+        readyStateListeners.delete(listener);
+    }
+    if (!isDOMReady()) {
+        var onReadyStateChange_1 = function () {
+            if (isDOMReady()) {
+                document.removeEventListener('readystatechange', onReadyStateChange_1);
+                readyStateListeners.forEach(function (listener) { return listener(); });
+                readyStateListeners.clear();
+            }
+        };
+        document.addEventListener('readystatechange', onReadyStateChange_1);
+    }
+    var HUGE_MUTATIONS_COUNT = 1000;
+    function isHugeMutation(mutations) {
+        if (mutations.length > HUGE_MUTATIONS_COUNT) {
+            return true;
+        }
+        var addedNodesCount = 0;
+        for (var i = 0; i < mutations.length; i++) {
+            addedNodesCount += mutations[i].addedNodes.length;
+            if (addedNodesCount > HUGE_MUTATIONS_COUNT) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function getElementsTreeOperations(mutations) {
+        var additions = new Set();
+        var deletions = new Set();
+        var moves = new Set();
+        mutations.forEach(function (m) {
+            forEach(m.addedNodes, function (n) {
+                if (n instanceof Element && n.isConnected) {
+                    additions.add(n);
+                }
+            });
+            forEach(m.removedNodes, function (n) {
+                if (n instanceof Element) {
+                    if (n.isConnected) {
+                        moves.add(n);
+                    }
+                    else {
+                        deletions.add(n);
+                    }
+                }
+            });
+        });
+        moves.forEach(function (n) { return additions.delete(n); });
+        var duplicateAdditions = [];
+        var duplicateDeletions = [];
+        additions.forEach(function (node) {
+            if (additions.has(node.parentElement)) {
+                duplicateAdditions.push(node);
+            }
+        });
+        deletions.forEach(function (node) {
+            if (deletions.has(node.parentElement)) {
+                duplicateDeletions.push(node);
+            }
+        });
+        duplicateAdditions.forEach(function (node) { return additions.delete(node); });
+        duplicateDeletions.forEach(function (node) { return deletions.delete(node); });
+        return { additions: additions, moves: moves, deletions: deletions };
+    }
+    var optimizedTreeObservers = new Map();
+    var optimizedTreeCallbacks = new WeakMap();
+    function createOptimizedTreeObserver(root, callbacks) {
+        var observer;
+        var observerCallbacks;
+        var domReadyListener;
+        if (optimizedTreeObservers.has(root)) {
+            observer = optimizedTreeObservers.get(root);
+            observerCallbacks = optimizedTreeCallbacks.get(observer);
+        }
+        else {
+            var hadHugeMutationsBefore_1 = false;
+            var subscribedForReadyState_1 = false;
+            observer = new MutationObserver(function (mutations) {
+                if (isHugeMutation(mutations)) {
+                    if (!hadHugeMutationsBefore_1 || isDOMReady()) {
+                        observerCallbacks.forEach(function (_a) {
+                            var onHugeMutations = _a.onHugeMutations;
+                            return onHugeMutations(root);
+                        });
+                    }
+                    else {
+                        if (!subscribedForReadyState_1) {
+                            domReadyListener = function () { return observerCallbacks.forEach(function (_a) {
+                                var onHugeMutations = _a.onHugeMutations;
+                                return onHugeMutations(root);
+                            }); };
+                            addDOMReadyListener(domReadyListener);
+                            subscribedForReadyState_1 = true;
+                        }
+                    }
+                    hadHugeMutationsBefore_1 = true;
+                }
+                else {
+                    var elementsOperations_1 = getElementsTreeOperations(mutations);
+                    observerCallbacks.forEach(function (_a) {
+                        var onMinorMutations = _a.onMinorMutations;
+                        return onMinorMutations(elementsOperations_1);
+                    });
+                }
+            });
+            observer.observe(root, { childList: true, subtree: true });
+            optimizedTreeObservers.set(root, observer);
+            observerCallbacks = new Set();
+            optimizedTreeCallbacks.set(observer, observerCallbacks);
+        }
+        observerCallbacks.add(callbacks);
+        return {
+            disconnect: function () {
+                observerCallbacks.delete(callbacks);
+                if (domReadyListener) {
+                    removeDOMReadyListener(domReadyListener);
+                }
+                if (observerCallbacks.size === 0) {
+                    observer.disconnect();
+                    optimizedTreeCallbacks.delete(observer);
+                    optimizedTreeObservers.delete(root);
+                }
+            },
+        };
+    }
 
     function hslToRGB(_a) {
         var h = _a.h, s = _a.s, l = _a.l, _b = _a.a, a = _b === void 0 ? 1 : _b;
         if (s === 0) {
-            var _c = [l, l, l].map(function (x) { return Math.round(x * 255); }), r_1 = _c[0], b_1 = _c[1], g_1 = _c[2];
+            var _c = __read([l, l, l].map(function (x) { return Math.round(x * 255); }), 3), r_1 = _c[0], b_1 = _c[1], g_1 = _c[2];
             return { r: r_1, g: g_1, b: b_1, a: a };
         }
         var c = (1 - Math.abs(2 * l - 1)) * s;
         var x = c * (1 - Math.abs((h / 60) % 2 - 1));
         var m = l - c / 2;
-        var _d = (h < 60 ? [c, x, 0] :
+        var _d = __read((h < 60 ? [c, x, 0] :
             h < 120 ? [x, c, 0] :
                 h < 180 ? [0, c, x] :
                     h < 240 ? [0, x, c] :
                         h < 300 ? [x, 0, c] :
-                            [c, 0, x]).map(function (n) { return Math.round((n + m) * 255); }), r = _d[0], g = _d[1], b = _d[2];
+                            [c, 0, x]).map(function (n) { return Math.round((n + m) * 255); }), 3), r = _d[0], g = _d[1], b = _d[2];
         return { r: r, g: g, b: b, a: a };
     }
     function rgbToHSL(_a) {
@@ -640,6 +884,13 @@
             return "" + (x < 16 ? '0' : '') + x.toString(16);
         }).join('');
     }
+    function hslToString(hsl) {
+        var h = hsl.h, s = hsl.s, l = hsl.l, a = hsl.a;
+        if (a != null && a < 1) {
+            return "hsla(" + toFixed(h) + ", " + toFixed(s * 100) + "%, " + toFixed(l * 100) + "%, " + toFixed(a, 2) + ")";
+        }
+        return "hsl(" + toFixed(h) + ", " + toFixed(s * 100) + "%, " + toFixed(l * 100) + "%)";
+    }
     var rgbMatch = /^rgba?\([^\(\)]+\)$/;
     var hslMatch = /^hsla?\([^\(\)]+\)$/;
     var hexMatch = /^#[0-9a-f]+$/i;
@@ -671,7 +922,7 @@
         var numbers = raw.map(function (r) { return r.trim(); }).map(function (r, i) {
             var n;
             var unit = unitsList.find(function (_a) {
-                var u = _a[0];
+                var _b = __read(_a, 1), u = _b[0];
                 return r.endsWith(u);
             });
             if (unit) {
@@ -691,14 +942,14 @@
     var rgbRange = [255, 255, 255, 1];
     var rgbUnits = { '%': 100 };
     function parseRGB($rgb) {
-        var _a = getNumbersFromString($rgb, rgbSplitter, rgbRange, rgbUnits), r = _a[0], g = _a[1], b = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
+        var _a = __read(getNumbersFromString($rgb, rgbSplitter, rgbRange, rgbUnits), 4), r = _a[0], g = _a[1], b = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
         return { r: r, g: g, b: b, a: a };
     }
     var hslSplitter = /hsla?|\(|\)|\/|,|\s/ig;
     var hslRange = [360, 1, 1, 1];
     var hslUnits = { '%': 100, 'deg': 360, 'rad': 2 * Math.PI, 'turn': 1 };
     function parseHSL($hsl) {
-        var _a = getNumbersFromString($hsl, hslSplitter, hslRange, hslUnits), h = _a[0], s = _a[1], l = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
+        var _a = __read(getNumbersFromString($hsl, hslSplitter, hslRange, hslUnits), 4), h = _a[0], s = _a[1], l = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
         return hslToRGB({ h: h, s: s, l: l, a: a });
     }
     function parseHex($hex) {
@@ -706,13 +957,13 @@
         switch (h.length) {
             case 3:
             case 4: {
-                var _a = [0, 1, 2].map(function (i) { return parseInt("" + h[i] + h[i], 16); }), r = _a[0], g = _a[1], b = _a[2];
+                var _a = __read([0, 1, 2].map(function (i) { return parseInt("" + h[i] + h[i], 16); }), 3), r = _a[0], g = _a[1], b = _a[2];
                 var a = h.length === 3 ? 1 : (parseInt("" + h[3] + h[3], 16) / 255);
                 return { r: r, g: g, b: b, a: a };
             }
             case 6:
             case 8: {
-                var _b = [0, 2, 4].map(function (i) { return parseInt(h.substring(i, i + 2), 16); }), r = _b[0], g = _b[1], b = _b[2];
+                var _b = __read([0, 2, 4].map(function (i) { return parseInt(h.substring(i, i + 2), 16); }), 3), r = _b[0], g = _b[1], b = _b[2];
                 var a = h.length === 6 ? 1 : (parseInt(h.substring(6, 8), 16) / 255);
                 return { r: r, g: g, b: b, a: a };
             }
@@ -918,7 +1169,7 @@
         WindowText: 0x000000,
         '-webkit-focus-ring-color': 0xe59700
     }).map(function (_a) {
-        var key = _a[0], value = _a[1];
+        var _b = __read(_a, 2), key = _b[0], value = _b[1];
         return [key.toLowerCase(), value];
     }));
 
@@ -973,7 +1224,7 @@
         return m;
     }
     function applyColorMatrix(_a, matrix) {
-        var r = _a[0], g = _a[1], b = _a[2];
+        var _b = __read(_a, 3), r = _b[0], g = _b[1], b = _b[2];
         var rgb = [[r / 255], [g / 255], [b / 255], [1], [1]];
         var result = multiplyMatrices(matrix, rgb);
         return [0, 1, 2].map(function (i) { return clamp(Math.round(result[i][0] * 255), 0, 255); });
@@ -1051,11 +1302,11 @@
         }
         var id = Object.entries(rgb)
             .concat(Object.entries(filter).filter(function (_a) {
-            var key = _a[0];
+            var _b = __read(_a, 1), key = _b[0];
             return ['mode', 'brightness', 'contrast', 'grayscale', 'sepia'].indexOf(key) >= 0;
         }))
             .map(function (_a) {
-            var key = _a[0], value = _a[1];
+            var _b = __read(_a, 2), key = _b[0], value = _b[1];
             return key + ":" + value;
         })
             .join(';');
@@ -1066,7 +1317,7 @@
         var modified = modifyHSL(hsl);
         var _a = hslToRGB(modified), r = _a.r, g = _a.g, b = _a.b, a = _a.a;
         var matrix = createFilterMatrix(filter);
-        var _b = applyColorMatrix([r, g, b], matrix), rf = _b[0], gf = _b[1], bf = _b[2];
+        var _b = __read(applyColorMatrix([r, g, b], matrix), 3), rf = _b[0], gf = _b[1], bf = _b[2];
         var color = (a === 1 ?
             rgbToHexString({ r: rf, g: gf, b: bf }) :
             rgbToString({ r: rf, g: gf, b: bf, a: a }));
@@ -1202,7 +1453,7 @@
 
     function createTextStyle(config) {
         var lines = [];
-        lines.push('* {');
+        lines.push('*:not(pre) {');
         if (config.useFont && config.fontFamily) {
             lines.push("  font-family: " + config.fontFamily + " !important;");
         }
@@ -1324,18 +1575,33 @@
             });
         });
     }
-    function analyzeImage(image) {
-        var MAX_ANALIZE_PIXELS_COUNT = 32 * 32;
-        var naturalPixelsCount = image.naturalWidth * image.naturalHeight;
-        var k = Math.min(1, Math.sqrt(MAX_ANALIZE_PIXELS_COUNT / naturalPixelsCount));
-        var width = Math.max(1, Math.round(image.naturalWidth * k));
-        var height = Math.max(1, Math.round(image.naturalHeight * k));
-        var canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        var context = canvas.getContext('2d');
+    var MAX_ANALIZE_PIXELS_COUNT = 32 * 32;
+    var canvas;
+    var context;
+    function createCanvas() {
+        var maxWidth = MAX_ANALIZE_PIXELS_COUNT;
+        var maxHeight = MAX_ANALIZE_PIXELS_COUNT;
+        canvas = document.createElement('canvas');
+        canvas.width = maxWidth;
+        canvas.height = maxHeight;
+        context = canvas.getContext('2d');
         context.imageSmoothingEnabled = false;
-        context.drawImage(image, 0, 0, width, height);
+    }
+    function removeCanvas() {
+        canvas = null;
+        context = null;
+    }
+    function analyzeImage(image) {
+        if (!canvas) {
+            createCanvas();
+        }
+        var naturalWidth = image.naturalWidth, naturalHeight = image.naturalHeight;
+        var naturalPixelsCount = naturalWidth * naturalHeight;
+        var k = Math.min(1, Math.sqrt(MAX_ANALIZE_PIXELS_COUNT / naturalPixelsCount));
+        var width = Math.ceil(naturalWidth * k);
+        var height = Math.ceil(naturalHeight * k);
+        context.clearRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, naturalWidth, naturalHeight, 0, 0, width, height);
         var imageData = context.getImageData(0, 0, width, height);
         var d = imageData.data;
         var TRANSPARENT_ALPHA_THRESHOLD = 0.05;
@@ -1346,7 +1612,7 @@
         var lightPixelsCount = 0;
         var i, x, y;
         var r, g, b, a;
-        var l, min, max;
+        var l;
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
                 i = 4 * (y * width + x);
@@ -1358,9 +1624,7 @@
                     transparentPixelsCount++;
                 }
                 else {
-                    min = Math.min(r, g, b);
-                    max = Math.max(r, g, b);
-                    l = (max + min) / 2;
+                    l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
                     if (l < DARK_LIGHTNESS_THRESHOLD) {
                         darkPixelsCount++;
                     }
@@ -1383,6 +1647,7 @@
             isLarge: (naturalPixelsCount >= LARGE_IMAGE_PIXELS_COUNT),
         };
     }
+    var objectURLs = new Set();
     function getFilteredImageDataURL(_a, filter) {
         var dataURL = _a.dataURL, width = _a.width, height = _a.height;
         var matrix = getSVGFilterMatrixValue(filter);
@@ -1402,7 +1667,13 @@
         }
         var blob = new Blob([bytes], { type: 'image/svg+xml' });
         var objectURL = URL.createObjectURL(blob);
+        objectURLs.add(objectURL);
         return objectURL;
+    }
+    function cleanImageProcessingCache() {
+        removeCanvas();
+        objectURLs.forEach(function (u) { return URL.revokeObjectURL(u); });
+        objectURLs.clear();
     }
 
     function getModifiableCSSDeclaration(property, value, rule, isCancelled) {
@@ -1419,7 +1690,7 @@
                 return { property: property, value: modifier, important: important, sourceValue: sourceValue };
             }
         }
-        else if (property === 'background-image') {
+        else if (property === 'background-image' || property === 'list-style-image') {
             var modifier = getBgImageModifier(property, value, rule, isCancelled);
             if (modifier) {
                 return { property: property, value: modifier, important: important, sourceValue: sourceValue };
@@ -1456,45 +1727,100 @@
         lines.push('::placeholder {');
         lines.push("    color: " + modifyForegroundColor({ r: 169, g: 169, b: 169 }, filter) + ";");
         lines.push('}');
-        ['::selection', '::-moz-selection'].forEach(function (selection) {
-            lines.push(selection + " {");
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 0, g: 96, b: 212 }, filter) + ";");
-            lines.push("    color: " + modifyForegroundColor({ r: 255, g: 255, b: 255 }, filter) + ";");
-            lines.push('}');
-        });
         lines.push('input:-webkit-autofill,');
         lines.push('textarea:-webkit-autofill,');
         lines.push('select:-webkit-autofill {');
         lines.push("    background-color: " + modifyBackgroundColor({ r: 250, g: 255, b: 189 }, filter) + " !important;");
         lines.push("    color: " + modifyForegroundColor({ r: 0, g: 0, b: 0 }, filter) + " !important;");
         lines.push('}');
-        if (!isMacOS()) {
-            lines.push('::-webkit-scrollbar {');
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 241, g: 241, b: 241 }, filter) + ";");
-            lines.push("    color: " + modifyForegroundColor({ r: 96, g: 96, b: 96 }, filter) + ";");
-            lines.push('}');
-            lines.push('::-webkit-scrollbar-thumb {');
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 193, g: 193, b: 193 }, filter) + ";");
-            lines.push('}');
-            lines.push('::-webkit-scrollbar-thumb:hover {');
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 166, g: 166, b: 166 }, filter) + ";");
-            lines.push('}');
-            lines.push('::-webkit-scrollbar-thumb:active {');
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 96, g: 96, b: 96 }, filter) + ";");
-            lines.push('}');
-            lines.push('::-webkit-scrollbar-corner {');
-            lines.push("    background-color: " + modifyBackgroundColor({ r: 255, g: 255, b: 255 }, filter) + ";");
-            lines.push('}');
-            lines.push('* {');
-            lines.push("    scrollbar-color: " + modifyBackgroundColor({ r: 193, g: 193, b: 193 }, filter) + " " + modifyBackgroundColor({ r: 241, g: 241, b: 241 }, filter) + ";");
-            lines.push('}');
+        if (filter.scrollbarColor) {
+            lines.push(getModifiedScrollbarStyle(filter));
         }
+        if (filter.selectionColor) {
+            lines.push(getModifiedSelectionStyle(filter));
+        }
+        return lines.join('\n');
+    }
+    function getModifiedSelectionStyle(theme) {
+        var lines = [];
+        var backgroundColorSelection;
+        var foregroundColorSelection;
+        if (theme.selectionColor === 'auto') {
+            backgroundColorSelection = modifyBackgroundColor({ r: 0, g: 96, b: 212 }, theme);
+            foregroundColorSelection = modifyForegroundColor({ r: 255, g: 255, b: 255 }, theme);
+        }
+        else {
+            var rgb = parse(theme.selectionColor);
+            var hsl = rgbToHSL(rgb);
+            backgroundColorSelection = theme.selectionColor;
+            if (hsl.l < 0.5) {
+                foregroundColorSelection = '#FFF';
+            }
+            else {
+                foregroundColorSelection = '#000';
+            }
+        }
+        ['::selection', '::-moz-selection'].forEach(function (selection) {
+            lines.push(selection + " {");
+            lines.push("    background-color: " + backgroundColorSelection + " !important;");
+            lines.push("    color: " + foregroundColorSelection + " !important;");
+            lines.push('}');
+        });
+        return lines.join('\n');
+    }
+    function getModifiedScrollbarStyle(theme) {
+        var lines = [];
+        var colorTrack;
+        var colorIcons;
+        var colorThumb;
+        var colorThumbHover;
+        var colorThumbActive;
+        var colorCorner;
+        if (theme.scrollbarColor === 'auto') {
+            colorTrack = modifyBackgroundColor({ r: 241, g: 241, b: 241 }, theme);
+            colorIcons = modifyForegroundColor({ r: 96, g: 96, b: 96 }, theme);
+            colorThumb = modifyBackgroundColor({ r: 176, g: 176, b: 176 }, theme);
+            colorThumbHover = modifyBackgroundColor({ r: 144, g: 144, b: 144 }, theme);
+            colorThumbActive = modifyBackgroundColor({ r: 96, g: 96, b: 96 }, theme);
+            colorCorner = modifyBackgroundColor({ r: 255, g: 255, b: 255 }, theme);
+        }
+        else {
+            var rgb = parse(theme.scrollbarColor);
+            var hsl_1 = rgbToHSL(rgb);
+            var isLight = hsl_1.l > 0.5;
+            var lighten = function (lighter) { return (__assign(__assign({}, hsl_1), { l: clamp(hsl_1.l + lighter, 0, 1) })); };
+            var darken = function (darker) { return (__assign(__assign({}, hsl_1), { l: clamp(hsl_1.l - darker, 0, 1) })); };
+            colorTrack = hslToString(darken(0.4));
+            colorIcons = hslToString(isLight ? darken(0.4) : lighten(0.4));
+            colorThumb = hslToString(hsl_1);
+            colorThumbHover = hslToString(lighten(0.1));
+            colorThumbActive = hslToString(lighten(0.2));
+        }
+        lines.push('::-webkit-scrollbar {');
+        lines.push("    background-color: " + colorTrack + ";");
+        lines.push("    color: " + colorIcons + ";");
+        lines.push('}');
+        lines.push('::-webkit-scrollbar-thumb {');
+        lines.push("    background-color: " + colorThumb + ";");
+        lines.push('}');
+        lines.push('::-webkit-scrollbar-thumb:hover {');
+        lines.push("    background-color: " + colorThumbHover + ";");
+        lines.push('}');
+        lines.push('::-webkit-scrollbar-thumb:active {');
+        lines.push("    background-color: " + colorThumbActive + ";");
+        lines.push('}');
+        lines.push('::-webkit-scrollbar-corner {');
+        lines.push("    background-color: " + colorCorner + ";");
+        lines.push('}');
+        lines.push('* {');
+        lines.push("    scrollbar-color: " + colorTrack + " " + colorThumb + ";");
+        lines.push('}');
         return lines.join('\n');
     }
     function getModifiedFallbackStyle(filter, _a) {
         var strict = _a.strict;
         var lines = [];
-        lines.push("html, body, " + (strict ? 'body *' : 'body > *') + " {");
+        lines.push("html, body, " + (strict ? 'body :not(iframe)' : 'body > :not(iframe)') + " {");
         lines.push("    background-color: " + modifyBackgroundColor({ r: 255, g: 255, b: 255 }, filter) + " !important;");
         lines.push("    border-color: " + modifyBorderColor({ r: 64, g: 64, b: 64 }, filter) + " !important;");
         lines.push("    color: " + modifyForegroundColor({ r: 0, g: 0, b: 0 }, filter) + " !important;");
@@ -1507,6 +1833,7 @@
         'initial',
         'currentcolor',
         'none',
+        'unset',
     ]);
     var colorParseCache = new Map();
     function parseColorWithCache($color) {
@@ -1741,6 +2068,7 @@
         colorParseCache.clear();
         clearColorModificationCache();
         imageDetailsCache.clear();
+        cleanImageProcessingCache();
         awaitingForImageLoading.clear();
     }
 
@@ -1831,75 +2159,88 @@
             ].join('\n');
         }).join('\n');
     }
-    function expand(nodes, selector) {
+    function getInlineStyleElements(root) {
         var results = [];
-        nodes.forEach(function (n) {
-            if (n instanceof Element) {
-                if (n.matches(selector)) {
-                    results.push(n);
-                }
-                results.push.apply(results, Array.from(n.querySelectorAll(selector)));
-            }
-        });
+        if (root instanceof Element && root.matches(INLINE_STYLE_SELECTOR)) {
+            results.push(root);
+        }
+        if (root instanceof Element || root instanceof ShadowRoot || root instanceof Document) {
+            push(results, root.querySelectorAll(INLINE_STYLE_SELECTOR));
+        }
         return results;
     }
-    var observers = new Map();
+    var treeObservers = new Map();
+    var attrObservers = new Map();
     function watchForInlineStyles(elementStyleDidChange, shadowRootDiscovered) {
-        deepWatchForInlineStyles(document.documentElement, elementStyleDidChange, shadowRootDiscovered);
+        deepWatchForInlineStyles(document, elementStyleDidChange, shadowRootDiscovered);
         iterateShadowNodes(document.documentElement, function (node) {
             deepWatchForInlineStyles(node.shadowRoot, elementStyleDidChange, shadowRootDiscovered);
         });
     }
     function deepWatchForInlineStyles(root, elementStyleDidChange, shadowRootDiscovered) {
-        if (observers.has(root)) {
-            observers.get(root).disconnect();
+        if (treeObservers.has(root)) {
+            treeObservers.get(root).disconnect();
+            attrObservers.get(root).disconnect();
         }
-        var observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function (m) {
-                var createdInlineStyles = expand(Array.from(m.addedNodes), INLINE_STYLE_SELECTOR);
-                if (createdInlineStyles.length > 0) {
-                    createdInlineStyles.forEach(function (el) { return elementStyleDidChange(el); });
+        var discoveredNodes = new WeakSet();
+        function discoverNodes(node) {
+            getInlineStyleElements(node).forEach(function (el) {
+                if (discoveredNodes.has(el)) {
+                    return;
                 }
-                if (m.type === 'attributes') {
-                    if (INLINE_STYLE_ATTRS.includes(m.attributeName)) {
-                        elementStyleDidChange(m.target);
-                    }
-                    overridesList
-                        .filter(function (_a) {
-                        var store = _a.store, dataAttr = _a.dataAttr;
-                        return store.has(m.target) && !m.target.hasAttribute(dataAttr);
-                    })
-                        .forEach(function (_a) {
-                        var dataAttr = _a.dataAttr;
-                        return m.target.setAttribute(dataAttr, '');
-                    });
-                }
+                discoveredNodes.add(el);
+                elementStyleDidChange(el);
             });
+            iterateShadowNodes(node, function (n) {
+                if (discoveredNodes.has(node)) {
+                    return;
+                }
+                discoveredNodes.add(node);
+                shadowRootDiscovered(n.shadowRoot);
+                deepWatchForInlineStyles(n.shadowRoot, elementStyleDidChange, shadowRootDiscovered);
+            });
+        }
+        var treeObserver = createOptimizedTreeObserver(root, {
+            onMinorMutations: function (_a) {
+                var additions = _a.additions;
+                additions.forEach(function (added) { return discoverNodes(added); });
+            },
+            onHugeMutations: function () {
+                discoverNodes(root);
+            },
+        });
+        treeObservers.set(root, treeObserver);
+        var attrObserver = new MutationObserver(function (mutations) {
             mutations.forEach(function (m) {
-                m.addedNodes.forEach(function (added) {
-                    if (added.isConnected) {
-                        iterateShadowNodes(added, function (n) {
-                            shadowRootDiscovered(n.shadowRoot);
-                            deepWatchForInlineStyles(n.shadowRoot, elementStyleDidChange, shadowRootDiscovered);
-                        });
-                    }
+                if (INLINE_STYLE_ATTRS.includes(m.attributeName)) {
+                    elementStyleDidChange(m.target);
+                }
+                overridesList
+                    .filter(function (_a) {
+                    var store = _a.store, dataAttr = _a.dataAttr;
+                    return store.has(m.target) && !m.target.hasAttribute(dataAttr);
+                })
+                    .forEach(function (_a) {
+                    var dataAttr = _a.dataAttr;
+                    return m.target.setAttribute(dataAttr, '');
                 });
             });
         });
-        observer.observe(root, {
-            childList: true,
-            subtree: true,
+        attrObserver.observe(root, {
             attributes: true,
             attributeFilter: INLINE_STYLE_ATTRS.concat(overridesList.map(function (_a) {
                 var dataAttr = _a.dataAttr;
                 return dataAttr;
             })),
+            subtree: true,
         });
-        observers.set(root, observer);
+        attrObservers.set(root, attrObserver);
     }
     function stopWatchingForInlineStyles() {
-        observers.forEach(function (o) { return o.disconnect(); });
-        observers.clear();
+        treeObservers.forEach(function (o) { return o.disconnect(); });
+        attrObservers.forEach(function (o) { return o.disconnect(); });
+        treeObservers.clear();
+        attrObservers.clear();
     }
     var inlineStyleCache = new WeakMap();
     var filterProps = ['brightness', 'contrast', 'grayscale', 'sepia', 'mode'];
@@ -1909,7 +2250,16 @@
             .concat(filterProps.map(function (prop) { return prop + "=\"" + theme[prop] + "\""; }))
             .join(' ');
     }
-    function overrideInlineStyle(element, theme) {
+    function shouldIgnoreInlineStyle(element, selectors) {
+        for (var i = 0; i < selectors.length; i++) {
+            var ingnoredSelector = selectors[i];
+            if (element.matches(ingnoredSelector)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function overrideInlineStyle(element, theme, ignoreSelectors) {
         var cacheKey = getInlineStyleCacheKey(element, theme);
         if (cacheKey === inlineStyleCache.get(element)) {
             return;
@@ -1930,6 +2280,16 @@
                 element.setAttribute(dataAttr, '');
             }
             unsetProps.delete(targetCSSProp);
+        }
+        if (ignoreSelectors.length > 0) {
+            if (shouldIgnoreInlineStyle(element, ignoreSelectors)) {
+                unsetProps.forEach(function (cssProp) {
+                    var _a = overrides[cssProp], store = _a.store, dataAttr = _a.dataAttr;
+                    store.delete(element);
+                    element.removeAttribute(dataAttr);
+                });
+                return;
+            }
         }
         if (element.hasAttribute('bgcolor')) {
             var value = element.getAttribute('bgcolor');
@@ -1970,7 +2330,7 @@
         if (element.style && element instanceof SVGTextElement && element.style.fill) {
             setCustomProp('fill', 'color', element.style.getPropertyValue('fill'));
         }
-        Array.from(unsetProps).forEach(function (cssProp) {
+        forEach(unsetProps, function (cssProp) {
             var _a = overrides[cssProp], store = _a.store, dataAttr = _a.dataAttr;
             store.delete(element);
             element.removeAttribute(dataAttr);
@@ -2002,10 +2362,10 @@
                 observer.disconnect();
             }
             observer = new MutationObserver(function (mutations) {
-                loop: for (var _i = 0, mutations_1 = mutations; _i < mutations_1.length; _i++) {
-                    var m = mutations_1[_i];
-                    for (var _a = 0, _b = Array.from(m.addedNodes); _a < _b.length; _a++) {
-                        var node = _b[_a];
+                loop: for (var i = 0; i < mutations.length; i++) {
+                    var addedNodes = mutations[i].addedNodes;
+                    for (var j = 0; j < addedNodes.length; j++) {
+                        var node = addedNodes[j];
                         if (node instanceof HTMLMetaElement && node.name === metaThemeColorName) {
                             observer.disconnect();
                             observer = null;
@@ -2029,23 +2389,7 @@
         }
     }
 
-    var STYLE_SELECTOR = (function () {
-        var selectors = [
-            'html /deep/ link[rel*="stylesheet" i]:not([disabled])',
-            'html /deep/ style',
-            ':host /deep/ link[rel*="stylesheet" i]:not([disabled])',
-            ':host /deep/ style',
-            ':host link[rel*="stylesheet" i]:not([disabled])',
-            ':host style',
-        ];
-        if (!isDeepSelectorSupported()) {
-            selectors = selectors.map(function (s) { return s.replace('/deep/ ', ''); });
-        }
-        if (!isHostSelectorSupported()) {
-            selectors = selectors.filter(function (s) { return !s.startsWith(':host'); });
-        }
-        return selectors.join(', ');
-    })();
+    var STYLE_SELECTOR = 'style, link[rel*="stylesheet" i]:not([disabled])';
     function shouldManageStyle(element) {
         return (((element instanceof HTMLStyleElement) ||
             (element instanceof SVGStyleElement) ||
@@ -2054,7 +2398,19 @@
                 element.rel.toLowerCase().includes('stylesheet') &&
                 !element.disabled)) &&
             !element.classList.contains('darkreader') &&
-            element.media !== 'print');
+            element.media !== 'print' &&
+            !element.classList.contains('stylus'));
+    }
+    function getManageableStyles(node, results) {
+        if (results === void 0) { results = []; }
+        if (shouldManageStyle(node)) {
+            results.push(node);
+        }
+        else if (node instanceof Element || node instanceof ShadowRoot || node === document) {
+            forEach(node.querySelectorAll(STYLE_SELECTOR), function (style) { return getManageableStyles(style, results); });
+            iterateShadowNodes(node, function (host) { return getManageableStyles(host.shadowRoot, results); });
+        }
+        return results;
     }
     var asyncQueue = createAsyncTasksQueue();
     function manageStyle(element, _a) {
@@ -2082,18 +2438,6 @@
         function getRulesSync() {
             if (corsCopy) {
                 return corsCopy.sheet.cssRules;
-            }
-            if (element.sheet == null) {
-                return null;
-            }
-            if (element instanceof HTMLLinkElement) {
-                try {
-                    return element.sheet.cssRules;
-                }
-                catch (err) {
-                    logWarn(err);
-                    return null;
-                }
             }
             if (containsCSSImport()) {
                 return null;
@@ -2125,45 +2469,51 @@
         var wasLoadingError = false;
         function getRulesAsync() {
             return __awaiter(this, void 0, void 0, function () {
-                var cssText, cssBasePath, err_1, fullCSSText, err_2;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
+                var cssText, cssBasePath, _a, cssRules, accessError, err_1, fullCSSText, err_2;
+                var _b;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
                         case 0:
-                            if (!(element instanceof HTMLLinkElement)) return [3, 6];
-                            if (!(element.sheet == null)) return [3, 4];
-                            _a.label = 1;
+                            if (!(element instanceof HTMLLinkElement)) return [3, 7];
+                            _a = __read(getRulesOrError(), 2), cssRules = _a[0], accessError = _a[1];
+                            if (accessError) {
+                                logWarn(accessError);
+                            }
+                            if (!((cssRules && !accessError) || isStillLoadingError(accessError))) return [3, 5];
+                            _c.label = 1;
                         case 1:
-                            _a.trys.push([1, 3, , 4]);
+                            _c.trys.push([1, 3, , 4]);
                             return [4, linkLoading(element)];
                         case 2:
-                            _a.sent();
+                            _c.sent();
+                            return [3, 4];
+                        case 3:
+                            err_1 = _c.sent();
+                            logWarn(err_1);
+                            wasLoadingError = true;
+                            return [3, 4];
+                        case 4:
                             if (cancelAsyncOperations) {
                                 return [2, null];
                             }
-                            return [3, 4];
-                        case 3:
-                            err_1 = _a.sent();
-                            logWarn(err_1);
-                            wasLoadingError = true;
-                            return [2, null];
-                        case 4:
-                            try {
-                                if (element.sheet.cssRules != null) {
-                                    return [2, element.sheet.cssRules];
-                                }
+                            _b = __read(getRulesOrError(), 2), cssRules = _b[0], accessError = _b[1];
+                            if (accessError) {
+                                logWarn(accessError);
                             }
-                            catch (err) {
-                                logWarn(err);
+                            _c.label = 5;
+                        case 5:
+                            if (cssRules != null) {
+                                return [2, cssRules];
                             }
                             return [4, loadText(element.href)];
-                        case 5:
-                            cssText = _a.sent();
+                        case 6:
+                            cssText = _c.sent();
                             cssBasePath = getCSSBaseBath(element.href);
                             if (cancelAsyncOperations) {
                                 return [2, null];
                             }
-                            return [3, 7];
-                        case 6:
+                            return [3, 8];
+                        case 7:
                             if (containsCSSImport()) {
                                 cssText = element.textContent.trim();
                                 cssBasePath = getCSSBaseBath(location.href);
@@ -2171,28 +2521,28 @@
                             else {
                                 return [2, null];
                             }
-                            _a.label = 7;
-                        case 7:
-                            if (!cssText) return [3, 12];
-                            _a.label = 8;
+                            _c.label = 8;
                         case 8:
-                            _a.trys.push([8, 10, , 11]);
-                            return [4, replaceCSSImports(cssText, cssBasePath)];
+                            if (!cssText) return [3, 13];
+                            _c.label = 9;
                         case 9:
-                            fullCSSText = _a.sent();
-                            corsCopy = createCORSCopy(element, fullCSSText);
-                            return [3, 11];
+                            _c.trys.push([9, 11, , 12]);
+                            return [4, replaceCSSImports(cssText, cssBasePath)];
                         case 10:
-                            err_2 = _a.sent();
-                            logWarn(err_2);
-                            return [3, 11];
+                            fullCSSText = _c.sent();
+                            corsCopy = createCORSCopy(element, fullCSSText);
+                            return [3, 12];
                         case 11:
+                            err_2 = _c.sent();
+                            logWarn(err_2);
+                            return [3, 12];
+                        case 12:
                             if (corsCopy) {
-                                corsCopyPositionWatcher = watchForNodePosition(corsCopy, { watchParent: true, watchSibling: true });
+                                corsCopyPositionWatcher = watchForNodePosition(corsCopy, 'prev-sibling');
                                 return [2, corsCopy.sheet.cssRules];
                             }
-                            _a.label = 12;
-                        case 12: return [2, null];
+                            _c.label = 13;
+                        case 13: return [2, null];
                     }
                 });
             });
@@ -2341,6 +2691,9 @@
                 }
                 syncStylePositionWatcher && syncStylePositionWatcher.stop();
                 insertStyle();
+                if (syncStyle.sheet == null) {
+                    syncStyle.textContent = '';
+                }
                 var sheet = syncStyle.sheet;
                 for (var i = sheet.cssRules.length - 1; i >= 0; i--) {
                     sheet.deleteRule(i);
@@ -2373,7 +2726,7 @@
                     syncStylePositionWatcher.run();
                 }
                 else {
-                    syncStylePositionWatcher = watchForNodePosition(syncStyle, { onRestore: buildStyleSheet, watchSibling: true, watchParent: true });
+                    syncStylePositionWatcher = watchForNodePosition(syncStyle, 'prev-sibling', buildStyleSheet);
                 }
             }
             function rebuildAsyncRule(key) {
@@ -2420,17 +2773,27 @@
         }
         var rulesChangeKey = null;
         var rulesCheckFrameId = null;
-        function safeGetSheetRules() {
+        function getRulesOrError() {
             try {
                 if (element.sheet == null) {
-                    return null;
+                    return [null, null];
                 }
-                return element.sheet.cssRules;
+                return [element.sheet.cssRules, null];
             }
             catch (err) {
+                return [null, err];
+            }
+        }
+        function isStillLoadingError(error) {
+            return error && error.message && error.message.includes('loading');
+        }
+        function safeGetSheetRules() {
+            var _a = __read(getRulesOrError(), 2), cssRules = _a[0], err = _a[1];
+            if (err) {
                 logWarn(err);
                 return null;
             }
+            return cssRules;
         }
         function updateRulesChangeKey() {
             var rules = safeGetSheetRules();
@@ -2542,44 +2905,59 @@
     }
     function replaceCSSImports(cssText, basePath) {
         return __awaiter(this, void 0, void 0, function () {
-            var importMatches, _i, importMatches_1, match, importURL, absoluteURL, importedCSS, err_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var importMatches, importMatches_1, importMatches_1_1, match, importURL, absoluteURL, importedCSS, err_3, e_1_1;
+            var e_1, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         cssText = removeCSSComments(cssText);
                         cssText = replaceCSSFontFace(cssText);
                         cssText = replaceCSSRelativeURLsWithAbsolute(cssText, basePath);
                         importMatches = getMatches(cssImportRegex, cssText);
-                        _i = 0, importMatches_1 = importMatches;
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        if (!(_i < importMatches_1.length)) return [3, 8];
-                        match = importMatches_1[_i];
+                        _b.trys.push([1, 10, 11, 12]);
+                        importMatches_1 = __values(importMatches), importMatches_1_1 = importMatches_1.next();
+                        _b.label = 2;
+                    case 2:
+                        if (!!importMatches_1_1.done) return [3, 9];
+                        match = importMatches_1_1.value;
                         importURL = getCSSImportURL(match);
                         absoluteURL = getAbsoluteURL(basePath, importURL);
                         importedCSS = void 0;
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 5, , 6]);
-                        return [4, loadText(absoluteURL)];
+                        _b.label = 3;
                     case 3:
-                        importedCSS = _a.sent();
-                        return [4, replaceCSSImports(importedCSS, getCSSBaseBath(absoluteURL))];
+                        _b.trys.push([3, 6, , 7]);
+                        return [4, loadText(absoluteURL)];
                     case 4:
-                        importedCSS = _a.sent();
-                        return [3, 6];
+                        importedCSS = _b.sent();
+                        return [4, replaceCSSImports(importedCSS, getCSSBaseBath(absoluteURL))];
                     case 5:
-                        err_3 = _a.sent();
+                        importedCSS = _b.sent();
+                        return [3, 7];
+                    case 6:
+                        err_3 = _b.sent();
                         logWarn(err_3);
                         importedCSS = '';
-                        return [3, 6];
-                    case 6:
-                        cssText = cssText.split(match).join(importedCSS);
-                        _a.label = 7;
+                        return [3, 7];
                     case 7:
-                        _i++;
-                        return [3, 1];
+                        cssText = cssText.split(match).join(importedCSS);
+                        _b.label = 8;
                     case 8:
+                        importMatches_1_1 = importMatches_1.next();
+                        return [3, 2];
+                    case 9: return [3, 12];
+                    case 10:
+                        e_1_1 = _b.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3, 12];
+                    case 11:
+                        try {
+                            if (importMatches_1_1 && !importMatches_1_1.done && (_a = importMatches_1.return)) _a.call(importMatches_1);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                        return [7];
+                    case 12:
                         cssText = cssText.trim();
                         return [2, cssText];
                 }
@@ -2600,29 +2978,15 @@
         return cors;
     }
 
-    var observer$1 = null;
-    function getAllManageableStyles(nodes) {
-        var results = [];
-        Array.from(nodes).forEach(function (node) {
-            if (node instanceof Element) {
-                if (shouldManageStyle(node)) {
-                    results.push(node);
-                }
-            }
-            if (node instanceof Element || node instanceof ShadowRoot) {
-                results.push.apply(results, Array.from(node.querySelectorAll(STYLE_SELECTOR)).filter(shouldManageStyle));
-            }
-        });
-        return results;
-    }
+    var observers = [];
+    var observedRoots;
     var undefinedGroups = new Map();
     var elementsDefinitionCallback;
     function collectUndefinedElements(root) {
         if (!isDefinedSelectorSupported()) {
             return;
         }
-        root.querySelectorAll(':not(:defined)')
-            .forEach(function (el) {
+        forEach(root.querySelectorAll(':not(:defined)'), function (el) {
             var tag = el.tagName.toLowerCase();
             if (!undefinedGroups.has(tag)) {
                 undefinedGroups.set(tag, new Set());
@@ -2665,115 +3029,128 @@
         elementsDefinitionCallback = null;
         undefinedGroups.clear();
     }
-    var shadowObservers = new Set();
-    var nodesShadowObservers = new WeakMap();
-    function unsubscribeFromShadowRootChanges() {
-        shadowObservers.forEach(function (o) { return o.disconnect(); });
-        shadowObservers.clear();
-        nodesShadowObservers = new WeakMap();
-    }
-    function watchForStyleChanges(update) {
-        if (observer$1) {
-            observer$1.disconnect();
-            shadowObservers.forEach(function (o) { return o.disconnect(); });
-            shadowObservers.clear();
-            nodesShadowObservers = new WeakMap();
+    function watchForStyleChanges(currentStyles, update) {
+        stopWatchingForStyleChanges();
+        var prevStyles = new Set(currentStyles);
+        var prevStyleSiblings = new WeakMap();
+        var nextStyleSiblings = new WeakMap();
+        function saveStylePosition(style) {
+            prevStyleSiblings.set(style, style.previousElementSibling);
+            nextStyleSiblings.set(style, style.nextElementSibling);
         }
-        function handleMutations(mutations) {
-            var createdStyles = new Set();
-            var updatedStyles = new Set();
-            var removedStyles = new Set();
-            var movedStyles = new Set();
-            var additions = new Set();
-            var deletions = new Set();
-            var styleUpdates = new Set();
-            mutations.forEach(function (m) {
-                m.addedNodes.forEach(function (n) { return additions.add(n); });
-                m.removedNodes.forEach(function (n) { return deletions.add(n); });
-                if (m.type === 'attributes' && shouldManageStyle(m.target)) {
-                    styleUpdates.add(m.target);
-                }
-            });
-            var styleAdditions = getAllManageableStyles(additions);
-            var styleDeletions = getAllManageableStyles(deletions);
-            additions.forEach(function (n) {
-                iterateShadowNodes(n, function (host) {
-                    var shadowStyles = getAllManageableStyles(host.shadowRoot.children);
-                    if (shadowStyles.length > 0) {
-                        styleAdditions.push.apply(styleAdditions, shadowStyles);
-                    }
-                });
-            });
-            deletions.forEach(function (n) {
-                iterateShadowNodes(n, function (host) {
-                    var shadowStyles = getAllManageableStyles(host.shadowRoot.children);
-                    if (shadowStyles.length > 0) {
-                        styleDeletions.push.apply(styleDeletions, shadowStyles);
-                    }
-                });
-            });
-            styleDeletions.forEach(function (style) {
-                if (style.isConnected) {
-                    movedStyles.add(style);
-                }
-                else {
-                    removedStyles.add(style);
-                }
-            });
-            styleUpdates.forEach(function (style) {
-                if (!removedStyles.has(style)) {
-                    updatedStyles.add(style);
-                }
-            });
-            styleAdditions.forEach(function (style) {
-                if (!(removedStyles.has(style) || movedStyles.has(style) || updatedStyles.has(style))) {
-                    createdStyles.add(style);
-                }
-            });
-            if (createdStyles.size + removedStyles.size + updatedStyles.size > 0) {
+        function forgetStylePosition(style) {
+            prevStyleSiblings.delete(style);
+            nextStyleSiblings.delete(style);
+        }
+        function didStylePositionChange(style) {
+            return (style.previousElementSibling !== prevStyleSiblings.get(style) ||
+                style.nextElementSibling !== nextStyleSiblings.get(style));
+        }
+        currentStyles.forEach(saveStylePosition);
+        function handleStyleOperations(operations) {
+            var createdStyles = operations.createdStyles, removedStyles = operations.removedStyles, movedStyles = operations.movedStyles;
+            createdStyles.forEach(function (s) { return saveStylePosition(s); });
+            movedStyles.forEach(function (s) { return saveStylePosition(s); });
+            removedStyles.forEach(function (s) { return forgetStylePosition(s); });
+            createdStyles.forEach(function (s) { return prevStyles.add(s); });
+            removedStyles.forEach(function (s) { return prevStyles.delete(s); });
+            if (createdStyles.size + removedStyles.size + movedStyles.size > 0) {
                 update({
                     created: Array.from(createdStyles),
-                    updated: Array.from(updatedStyles),
                     removed: Array.from(removedStyles),
                     moved: Array.from(movedStyles),
+                    updated: [],
                 });
             }
+        }
+        function handleMinorTreeMutations(_a) {
+            var additions = _a.additions, moves = _a.moves, deletions = _a.deletions;
+            var createdStyles = new Set();
+            var removedStyles = new Set();
+            var movedStyles = new Set();
+            additions.forEach(function (node) { return getManageableStyles(node).forEach(function (style) { return createdStyles.add(style); }); });
+            deletions.forEach(function (node) { return getManageableStyles(node).forEach(function (style) { return removedStyles.add(style); }); });
+            moves.forEach(function (node) { return getManageableStyles(node).forEach(function (style) { return movedStyles.add(style); }); });
+            handleStyleOperations({ createdStyles: createdStyles, removedStyles: removedStyles, movedStyles: movedStyles });
             additions.forEach(function (n) {
-                if (n.isConnected) {
-                    iterateShadowNodes(n, subscribeForShadowRootChanges);
-                    if (n instanceof Element) {
-                        collectUndefinedElements(n);
-                    }
-                }
+                iterateShadowNodes(n, subscribeForShadowRootChanges);
+                collectUndefinedElements(n);
             });
         }
+        function handleHugeTreeMutations(root) {
+            var styles = new Set(getManageableStyles(root));
+            var createdStyles = new Set();
+            var removedStyles = new Set();
+            var movedStyles = new Set();
+            styles.forEach(function (s) {
+                if (!prevStyles.has(s)) {
+                    createdStyles.add(s);
+                }
+            });
+            prevStyles.forEach(function (s) {
+                if (!styles.has(s)) {
+                    removedStyles.add(s);
+                }
+            });
+            styles.forEach(function (s) {
+                if (!createdStyles.has(s) && !removedStyles.has(s) && didStylePositionChange(s)) {
+                    movedStyles.add(s);
+                }
+            });
+            handleStyleOperations({ createdStyles: createdStyles, removedStyles: removedStyles, movedStyles: movedStyles });
+            iterateShadowNodes(root, subscribeForShadowRootChanges);
+            collectUndefinedElements(root);
+        }
+        function handleAttributeMutations(mutations) {
+            var updatedStyles = new Set();
+            mutations.forEach(function (m) {
+                if (shouldManageStyle(m.target) && m.target.isConnected) {
+                    updatedStyles.add(m.target);
+                }
+            });
+            if (updatedStyles.size > 0) {
+                update({
+                    updated: Array.from(updatedStyles),
+                    created: [],
+                    removed: [],
+                    moved: [],
+                });
+            }
+        }
+        function observe(root) {
+            var treeObserver = createOptimizedTreeObserver(root, {
+                onMinorMutations: handleMinorTreeMutations,
+                onHugeMutations: handleHugeTreeMutations,
+            });
+            var attrObserver = new MutationObserver(handleAttributeMutations);
+            attrObserver.observe(root, { attributes: true, attributeFilter: ['rel', 'disabled'], subtree: true });
+            observers.push(treeObserver, attrObserver);
+            observedRoots.add(root);
+        }
         function subscribeForShadowRootChanges(node) {
-            if (nodesShadowObservers.has(node)) {
+            if (node.shadowRoot == null || observedRoots.has(node.shadowRoot)) {
                 return;
             }
-            var shadowObserver = new MutationObserver(handleMutations);
-            shadowObserver.observe(node.shadowRoot, mutationObserverOptions);
-            shadowObservers.add(shadowObserver);
-            nodesShadowObservers.set(node, shadowObserver);
+            observe(node.shadowRoot);
         }
-        var mutationObserverOptions = { childList: true, subtree: true, attributes: true, attributeFilter: ['rel', 'disabled'] };
-        observer$1 = new MutationObserver(handleMutations);
-        observer$1.observe(document.documentElement, mutationObserverOptions);
+        observe(document);
         iterateShadowNodes(document.documentElement, subscribeForShadowRootChanges);
         watchWhenCustomElementsDefined(function (hosts) {
-            var newStyles = getAllManageableStyles(hosts.map(function (h) { return h.shadowRoot; }));
+            var newStyles = [];
+            hosts.forEach(function (host) { return push(newStyles, getManageableStyles(host.shadowRoot)); });
             update({ created: newStyles, updated: [], removed: [], moved: [] });
             hosts.forEach(function (h) { return subscribeForShadowRootChanges(h); });
         });
         collectUndefinedElements(document);
     }
+    function resetObservers() {
+        observers.forEach(function (o) { return o.disconnect(); });
+        observers.splice(0, observers.length);
+        observedRoots = new WeakSet();
+    }
     function stopWatchingForStyleChanges() {
-        if (observer$1) {
-            observer$1.disconnect();
-            observer$1 = null;
-            unsubscribeFromShadowRootChanges();
-            unsubscribeFromDefineCustomElements();
-        }
+        resetObservers();
+        unsubscribeFromDefineCustomElements();
     }
 
     var styleManagers = new Map();
@@ -2795,32 +3172,31 @@
     var stylePositionWatchers = new Map();
     function setupStylePositionWatcher(node, alias) {
         stylePositionWatchers.has(alias) && stylePositionWatchers.get(alias).stop();
-        stylePositionWatchers.set(alias, watchForNodePosition(node, { watchParent: true, watchSibling: false }));
+        stylePositionWatchers.set(alias, watchForNodePosition(node, 'parent'));
     }
     function stopStylePositionWatchers() {
-        Array.from(stylePositionWatchers.values()).forEach(function (watcher) { return watcher.stop(); });
+        forEach(stylePositionWatchers.values(), function (watcher) { return watcher.stop(); });
         stylePositionWatchers.clear();
     }
     function createStaticStyleOverrides() {
         var fallbackStyle = createOrUpdateStyle('darkreader--fallback');
-        document.head.insertBefore(fallbackStyle, document.head.firstChild);
         fallbackStyle.textContent = getModifiedFallbackStyle(filter, { strict: true });
+        document.head.insertBefore(fallbackStyle, document.head.firstChild);
         setupStylePositionWatcher(fallbackStyle, 'fallback');
         var userAgentStyle = createOrUpdateStyle('darkreader--user-agent');
-        document.head.insertBefore(userAgentStyle, fallbackStyle.nextSibling);
         userAgentStyle.textContent = getModifiedUserAgentStyle(filter, isIFrame);
+        document.head.insertBefore(userAgentStyle, fallbackStyle.nextSibling);
         setupStylePositionWatcher(userAgentStyle, 'user-agent');
         var textStyle = createOrUpdateStyle('darkreader--text');
-        document.head.insertBefore(textStyle, fallbackStyle.nextSibling);
         if (filter.useFont || filter.textStroke > 0) {
             textStyle.textContent = createTextStyle(filter);
         }
         else {
             textStyle.textContent = '';
         }
+        document.head.insertBefore(textStyle, fallbackStyle.nextSibling);
         setupStylePositionWatcher(textStyle, 'text');
         var invertStyle = createOrUpdateStyle('darkreader--invert');
-        document.head.insertBefore(invertStyle, textStyle.nextSibling);
         if (fixes && Array.isArray(fixes.invert) && fixes.invert.length > 0) {
             invertStyle.textContent = [
                 fixes.invert.join(', ') + " {",
@@ -2831,21 +3207,22 @@
         else {
             invertStyle.textContent = '';
         }
+        document.head.insertBefore(invertStyle, textStyle.nextSibling);
         setupStylePositionWatcher(invertStyle, 'invert');
         var inlineStyle = createOrUpdateStyle('darkreader--inline');
-        document.head.insertBefore(inlineStyle, invertStyle.nextSibling);
         inlineStyle.textContent = getInlineOverrideStyle();
+        document.head.insertBefore(inlineStyle, invertStyle.nextSibling);
         setupStylePositionWatcher(inlineStyle, 'inline');
         var overrideStyle = createOrUpdateStyle('darkreader--override');
-        document.head.appendChild(overrideStyle);
         overrideStyle.textContent = fixes && fixes.css ? replaceCSSTemplates(fixes.css) : '';
+        document.head.appendChild(overrideStyle);
         setupStylePositionWatcher(overrideStyle, 'override');
     }
     var shadowRootsWithOverrides = new Set();
     function createShadowStaticStyleOverrides(root) {
         var inlineStyle = createOrUpdateStyle('darkreader--inline', root);
-        root.insertBefore(inlineStyle, root.firstChild);
         inlineStyle.textContent = getInlineOverrideStyle();
+        root.insertBefore(inlineStyle, root.firstChild);
         shadowRootsWithOverrides.add(root);
     }
     function replaceCSSTemplates($cssText) {
@@ -2869,15 +3246,9 @@
     function createDynamicStyleOverrides() {
         cancelRendering();
         updateVariables(getElementCSSVariables(document.documentElement));
-        var allStyles = Array.from(document.querySelectorAll(STYLE_SELECTOR));
-        iterateShadowNodes(document.documentElement, function (node) {
-            var shadowStyles = node.shadowRoot.querySelectorAll(STYLE_SELECTOR);
-            if (shadowStyles.length > 0) {
-                allStyles.push.apply(allStyles, Array.from(shadowStyles));
-            }
-        });
-        var newManagers = Array.from(allStyles)
-            .filter(function (style) { return !styleManagers.has(style) && shouldManageStyle(style); })
+        var allStyles = getManageableStyles(document);
+        var newManagers = allStyles
+            .filter(function (style) { return !styleManagers.has(style); })
             .map(function (style) { return createManager(style); });
         var newVariables = newManagers
             .map(function (manager) { return manager.details(); })
@@ -2901,15 +3272,16 @@
             });
         }
         newManagers.forEach(function (manager) { return manager.watch(); });
-        var inlineStyleElements = Array.from(document.querySelectorAll(INLINE_STYLE_SELECTOR));
+        var inlineStyleElements = toArray(document.querySelectorAll(INLINE_STYLE_SELECTOR));
         iterateShadowNodes(document.documentElement, function (node) {
             var elements = node.shadowRoot.querySelectorAll(INLINE_STYLE_SELECTOR);
             if (elements.length > 0) {
                 createShadowStaticStyleOverrides(node.shadowRoot);
-                inlineStyleElements.push.apply(inlineStyleElements, Array.from(elements));
+                push(inlineStyleElements, elements);
             }
         });
-        inlineStyleElements.forEach(function (el) { return overrideInlineStyle(el, filter); });
+        var ignoredSelectors = fixes && Array.isArray(fixes.ignoreInlineStyle) ? fixes.ignoreInlineStyle : [];
+        inlineStyleElements.forEach(function (el) { return overrideInlineStyle(el, filter, ignoredSelectors); });
     }
     var loadingStylesCounter = 0;
     var loadingStyles = new Set();
@@ -2919,7 +3291,7 @@
         }
         var loadingStyleId = ++loadingStylesCounter;
         function loadingStart() {
-            if (!isPageLoaded() || !didDocumentShowUp) {
+            if (!isDOMReady() || !didDocumentShowUp) {
                 loadingStyles.add(loadingStyleId);
                 var fallbackStyle = document.querySelector('.darkreader--fallback');
                 if (!fallbackStyle.textContent) {
@@ -2929,7 +3301,7 @@
         }
         function loadingEnd() {
             loadingStyles.delete(loadingStyleId);
-            if (loadingStyles.size === 0 && isPageLoaded()) {
+            if (loadingStyles.size === 0 && isDOMReady()) {
                 cleanFallbackStyle();
             }
         }
@@ -2971,14 +3343,7 @@
     var cancelRendering = function () {
         throttledRenderAllStyles.cancel();
     };
-    function isPageLoaded() {
-        return document.readyState === 'complete' || document.readyState === 'interactive';
-    }
-    function onReadyStateChange() {
-        if (!isPageLoaded()) {
-            return;
-        }
-        document.removeEventListener('readystatechange', onReadyStateChange);
+    function onDOMReady() {
         if (loadingStyles.size === 0) {
             cleanFallbackStyle();
         }
@@ -3017,7 +3382,8 @@
         changeMetaThemeColorWhenAvailable(filter);
     }
     function watchForUpdates() {
-        watchForStyleChanges(function (_a) {
+        var managedStyles = Array.from(styleManagers.keys());
+        watchForStyleChanges(managedStyles, function (_a) {
             var created = _a.created, updated = _a.updated, removed = _a.removed, moved = _a.moved;
             var stylesToRemove = removed;
             var stylesToManage = created.concat(updated).concat(moved)
@@ -3044,8 +3410,9 @@
             newManagers.forEach(function (manager) { return manager.watch(); });
             stylesToRestore.forEach(function (style) { return styleManagers.get(style).restore(); });
         });
+        var ignoredSelectors = fixes && Array.isArray(fixes.ignoreInlineStyle) ? fixes.ignoreInlineStyle : [];
         watchForInlineStyles(function (element) {
-            overrideInlineStyle(element, filter);
+            overrideInlineStyle(element, filter, ignoredSelectors);
             if (element === document.documentElement) {
                 var rootVariables = getElementCSSVariables(document.documentElement);
                 if (rootVariables.size > 0) {
@@ -3057,17 +3424,17 @@
             var inlineStyleElements = root.querySelectorAll(INLINE_STYLE_SELECTOR);
             if (inlineStyleElements.length > 0) {
                 createShadowStaticStyleOverrides(root);
-                inlineStyleElements.forEach(function (el) { return overrideInlineStyle(el, filter); });
+                forEach(inlineStyleElements, function (el) { return overrideInlineStyle(el, filter, ignoredSelectors); });
             }
         });
-        document.addEventListener('readystatechange', onReadyStateChange);
+        addDOMReadyListener(onDOMReady);
     }
     function stopWatchingForUpdates() {
         styleManagers.forEach(function (manager) { return manager.pause(); });
         stopStylePositionWatchers();
         stopWatchingForStyleChanges();
         stopWatchingForInlineStyles();
-        document.removeEventListener('readystatechange', onReadyStateChange);
+        removeDOMReadyListener(onDOMReady);
     }
     function createOrUpdateDynamicTheme(filterConfig, dynamicThemeFixes, iframe) {
         filter = filterConfig;
@@ -3106,8 +3473,8 @@
             removeNode(root.querySelector('.darkreader--inline'));
         });
         shadowRootsWithOverrides.clear();
-        Array.from(styleManagers.keys()).forEach(function (el) { return removeManager(el); });
-        Array.from(document.querySelectorAll('.darkreader')).forEach(removeNode);
+        forEach(styleManagers.keys(), function (el) { return removeManager(el); });
+        forEach(document.querySelectorAll('.darkreader'), removeNode);
     }
     function cleanDynamicThemeCache() {
         stopWatchingForDocumentVisibility();
@@ -3116,18 +3483,6 @@
         cleanModificationCache();
     }
 
-    var defaultTheme = {
-        mode: 1,
-        brightness: 100,
-        contrast: 100,
-        grayscale: 0,
-        sepia: 0,
-        useFont: false,
-        fontFamily: '',
-        textStroke: 0,
-        engine: ThemeEngines.dynamicTheme,
-        stylesheet: '',
-    };
     var isIFrame$1 = (function () {
         try {
             return window.self !== window.top;
@@ -3140,7 +3495,7 @@
     function enable(themeOptions, fixes) {
         if (themeOptions === void 0) { themeOptions = {}; }
         if (fixes === void 0) { fixes = null; }
-        var theme = __assign(__assign({}, defaultTheme), themeOptions);
+        var theme = __assign(__assign({}, DEFAULT_THEME), themeOptions);
         if (theme.engine !== ThemeEngines.dynamicTheme) {
             throw new Error('Theme engine is not supported');
         }
