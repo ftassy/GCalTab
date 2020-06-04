@@ -28,7 +28,7 @@ You can switch on/off the "Dark" button to activate DarkReader on the Google Cal
 ### There are plenty of add-ons that open a Google Calendar tab in Thunderbird. What does GCalTab bring ?
 GCalTab brings two things that are often missed in other add-ons:  
 * The possibility to switch to a dark mode. Save your eyes !
-* The possibility to disconnect - reconnect from GCalTab menu. Especially useful if you have several Google Calendar accounts !
+* The possibility to disconnect - reconnect and switch between several accounts from GCalTab menu. Especially useful if you have several Google Calendar accounts !
 
 ### What permissions are needed ?
 GCalTab will need to access your data for:  
@@ -66,7 +66,7 @@ You will have to allow and keep cookies for these three domains:
 
 ### How do I disconnect from a Google Calendar account ?
 If you use the Google Calendar "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird but your web browser session.  
-**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/icons/sign_out_alt_solid.png" alt="Thunderbird menu" style="background-color: 'gray';">.  
+**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/icons/sign_out_alt_solid.svg" alt="Sign out icon" style="background-color: 'gray';">.  
 
 ### How do I switch to another Google Calendar account ? 
 If you use the Google Calendar "Add account" or "Manage your Google Account" button, the link will open in your web browser and will not change your Thunderbird session.  
