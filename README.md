@@ -1,8 +1,8 @@
 <p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/icons/gcaltab.png" alt="GCalTab icon menu"></p>
 
 # GCalTab 
-GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab.
-It features a beautiful dark mode thanks to the [DarkReader](https://darkreader.org/) algorithm.  
+GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab. It facilitates multiple accounts management.
+and features a beautiful dark mode thanks to the [DarkReader](https://darkreader.org/) algorithm.  
 
 ******************
 <p align="center">
@@ -66,7 +66,13 @@ You will have to allow and keep cookies for these three domains:
 
 ### How do I disconnect from a Google Calendar account ?
 If you use the Google Calendar "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird but your web browser session.  
-**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button.  
+**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/icons/sign_out_alt_solid.png" alt="Thunderbird menu" style="background-color: 'gray';">.  
+
+### How do I switch to another Google Calendar account ? 
+If you use the Google Calendar "Add account" or "Manage your Google Account" button, the link will open in your web browser and will not change your Thunderbird session.  
+**Since version 0.7**
+If you have ever connected to the account you wish to switch to, you can click the "Switch account" button .
+If you wish to connect to a new account, this can be done by clicking the "from GCalTab menu by pushing the "Sign out" button.  
 
 ## Build from source
 Prerequisite:  
@@ -95,9 +101,10 @@ GCalTab and its developer are not affiliated, sponsored nor endorsed by any of t
 
 ## Acknowledgments
 GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
-
+GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
+0.7 -> addition of buttons to ease multiple accounts management
 0.6 -> upgrade to DarkReader v4.9.10  
 0.5 -> addition of the disconnexion button  
 0.4 -> first release  
