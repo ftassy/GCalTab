@@ -3,19 +3,23 @@
 /******************************************************/
 // Retrieve buttons
 let gCalButton = document.getElementById("gcal");
-let modeSwitcher = document.getElementById("switch");
+let modeSwitcher = document.getElementById("switchMode");
+let accountAttacher = document.getElementById("addAccount");
+let accountSwitcher = document.getElementById("switchAccount");
 let signOutButton = document.getElementById("signout");
 
 // Initialize the switch button per local storage value
 let gettingItem = browser.storage.local.get("darkModeGCalTab");
 gettingItem.then(onGot, onError);
 
-// Initialize number of active tabs
-let nbTabs = null;
+// Initialize id of active Google Calendar tab
+let tabsId = null;
 
 // Add click listeners to page
 gCalButton.addEventListener("click", openGoogleCalendar);
 modeSwitcher.addEventListener("click", switchMode);
+accountAttacher.addEventListener("click", addAccount);
+accountSwitcher.addEventListener("click", switchAccount);
 signOutButton.addEventListener("click", disconnect);
 
 keepTabUnique();
@@ -24,8 +28,7 @@ keepTabUnique();
 /* Function definitions */
 /******************************************************/
 
-/** Function that opens a Google Calendar tab.
- * Triggered when "Open" button in clicked
+/** Function that opens a Thunderbird tab.
  * */
 function openOrUpdateTab(url) {
     tabProperties = {
@@ -33,13 +36,13 @@ function openOrUpdateTab(url) {
         url: url,
     };
 
-    if (nbTabs === null) {
-        console.log(nbTabs);
+    if (tabsId === null) {
+        console.log(tabsId);
         browser.tabs.create(tabProperties);
         keepTabUnique();
     } else {
-        console.log(nbTabs);
-        browser.tabs.update(nbTabs, tabProperties);
+        console.log(tabsId);
+        browser.tabs.update(tabsId, tabProperties);
         keepTabUnique();
     }
 }
@@ -49,8 +52,22 @@ function openGoogleCalendar() {
     openOrUpdateTab("https://www.google.com/calendar");
 }
 
-/** Wraps openOrUpdateTab for disconnecting for the
+/** Wraps openOrUpdateTab for connecting to a new
  * account
+ * */
+function addAccount() {
+    openOrUpdateTab("https://accounts.google.com/AddSession?sacu=1&continue=https%3A%2F%2Fwww.google.com%2Fcalendar");
+}
+
+/** Wraps openOrUpdateTab for switching to another
+ * account
+ * */
+function switchAccount() {
+    openOrUpdateTab("https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fwww.google.com%2Fcalendar");
+}
+
+/** Wraps openOrUpdateTab for disconnecting from the
+ * account(s)
  * */
 function disconnect() {
     openOrUpdateTab("https://accounts.google.com/Logout?continue=https://calendar.google.com/");
@@ -67,16 +84,16 @@ function keepTabUnique() {
 }
 
 /** Function executed after a Google Calendar tab is
- * seeked. If there is one, it returns the corresponding
+ * sought. If there is one, it returns the corresponding
  * tab id. If there is none, it returns null.
  * */
 function retrieveGCalTab(tabs) {
     if (tabs.length >= 1) {
         for (let tab of tabs) {
-            nbTabs = tab.id;
+            tabsId = tab.id;
         }
     } else {
-        return (nbTabs = null);
+        return (tabsId = null);
     }
 }
 
@@ -105,13 +122,13 @@ function onGot(item) {
  * failed.
  * */
 function onError(error) {
-    console.log(`Error: ${error}`);
+    console.log(`Error GCT: ${error}`);
 }
 
 /** Function triggered when "Dark" button is switched on/off
  * */
 function switchMode() {
-    let buttonValue = document.getElementById("switch").checked ? true : false;
+    let buttonValue = document.getElementById("switchMode").checked ? true : false;
     browser.storage.local.set({
         darkModeGCalTab: buttonValue,
     });
