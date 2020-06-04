@@ -97,14 +97,14 @@ Windows is a registered trademark of Microsoft Corporation.
 macOS is a registered trademark of Apple Inc.  
 
 The above-mentioned trademarks are only used to refer to products.  
-GCalTab and its developer are not affiliated, sponsored nor endorsed by any of the above-mentioned organizations.
+GCalTab and its developer are not affiliated, sponsored nor endorsed by any of the above-mentioned organizations.  
 
 ## Acknowledgments
-GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
+GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)  
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
-0.7 -> addition of buttons to ease multiple accounts management
+0.7 -> addition of buttons to ease multiple accounts management  
 0.6 -> upgrade to DarkReader v4.9.10  
 0.5 -> addition of the disconnexion button  
 0.4 -> first release  
