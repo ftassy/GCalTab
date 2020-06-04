@@ -66,13 +66,13 @@ You will have to allow and keep cookies for these three domains:
 
 ### How do I disconnect from a Google Calendar account ?
 If you use the Google Calendar "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird but your web browser session.  
-**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/sign_out_alt_solid.png" alt="Sign out icon">.  
+**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/sign-out-alt-solid.png" alt="Sign out icon" height="1em">.  
 
 ### How do I switch to another Google Calendar account ? 
 If you use the Google Calendar "Add account" or "Manage your Google Account" button, the link will open in your web browser and will not change your Thunderbird session.  
 **Since version 0.7**
-If you have ever connected to the account you wish to switch to, you can click the "Switch account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-friends-solid.png" alt="Switch account icon">.
-If you wish to connect to a new account, this can be done by clicking the "Add account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-plus-solid.png" alt="Add account icon">.  
+If you have ever connected to the account you wish to switch to, you can click the "Switch account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-friends-solid.png" alt="Switch account icon" height="1em">.  
+If you wish to connect to a new account, this can be done by clicking the "Add account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-plus-solid.png" alt="Add account icon" height="1em">.  
 
 ## Build from source
 Prerequisite:  
