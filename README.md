@@ -80,12 +80,7 @@ Install [web-ext](https://extensionworkshop.com/documentation/develop/getting-st
 
 The add-on can be built by running the following command from its root directory:  
 ```
-web-ext build
-```
-
-More specifically, if you have cloned this repository, you can run:
-```
-web-ext build --ignore-files=images README.md
+npm run build
 ```
 
 ## Legal notice
