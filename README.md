@@ -104,6 +104,7 @@ GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
+1.0.0 -> npm is now used to manage 3rd party libraries, upgrade to DarkReader v4.9.16 and Spectre.css v0.5.9
 0.7 -> addition of buttons to ease multiple accounts management  
 0.6 -> upgrade to DarkReader v4.9.10  
 0.5 -> addition of the disconnexion button  
