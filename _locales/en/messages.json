@@ -1,0 +1,26 @@
+{
+    "gCalButton": {
+        "message": "Open",
+        "description": "Open Google Calendar button"
+    },
+
+    "modeSwitcher": {
+        "message": "Dark",
+        "description": "Dark mode switcher"
+    },
+
+    "addAccount": {
+        "message": "Add account",
+        "description": "Add account button"
+    },
+
+    "switchAccount": {
+        "message": "Switch account",
+        "description": "Switch account button"
+    },
+
+    "signOut": {
+        "message": "Sign out",
+        "description": "Sign out button"
+    }
+} 

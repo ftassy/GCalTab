@@ -2,11 +2,11 @@
 /* Initiliazation sequence */
 /******************************************************/
 // Retrieve buttons
-let gCalButton = document.getElementById("gcal");
-let modeSwitcher = document.getElementById("switchMode");
-let accountAttacher = document.getElementById("addAccount");
-let accountSwitcher = document.getElementById("switchAccount");
-let signOutButton = document.getElementById("signout");
+const gCalButton = document.getElementById("gcal");
+const modeSwitcher = document.getElementById("switchMode");
+const accountAttacher = document.getElementById("addAccount");
+const accountSwitcher = document.getElementById("switchAccount");
+const signOutButton = document.getElementById("signOut");
 
 // Initialize the switch button per local storage value
 let gettingItem = browser.storage.local.get("darkModeGCalTab");
@@ -14,6 +14,26 @@ gettingItem.then(onGot, onError);
 
 // Initialize id of active Google Calendar tab
 let tabsId = null;
+
+// UI internationalization 
+var gCalButtonLabel = browser.i18n.getMessage("gCalButton");
+gCalButton.firstChild.textContent = gCalButtonLabel;
+
+const modeSwitcherContainer = document.getElementById("switchModeLabel");
+var modeSwitcherLabel = browser.i18n.getMessage("modeSwitcher");
+modeSwitcherContainer.textContent = modeSwitcherLabel;
+
+const addAccountIcon = document.getElementById("addAccountIcon");
+var addAccountLabel = browser.i18n.getMessage("addAccount");
+addAccountIcon.setAttribute("title", addAccountLabel);
+
+const switchAccountIcon = document.getElementById("switchAccountIcon");
+var switchAccountLabel = browser.i18n.getMessage("switchAccount");
+switchAccountIcon.setAttribute("title", switchAccountLabel);
+
+const signOutIcon = document.getElementById("signOutIcon");
+var signOutLabel = browser.i18n.getMessage("signOut");
+signOutIcon.setAttribute("title", signOutLabel);
 
 // Add click listeners to page
 gCalButton.addEventListener("click", openGoogleCalendar);
