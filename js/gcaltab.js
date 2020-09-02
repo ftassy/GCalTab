@@ -1,14 +1,15 @@
 /******************************************************/
-/* Initiliazation */
+/* Initialization */
 /******************************************************/
 
 /* Wait for DarkReader script load. Once loaded, 
 depending on the value in local sotrage, trigger 
 or not the DarkReader activation. */
 loadScript("DarkReader", function() {
-    let gettingItem = browser.storage.local.get("darkModeGCalTab");
-    gettingItem.then(onGot, onError);
+    let gettingDarkModeParam = browser.storage.local.get("darkModeGCalTab");
+    gettingDarkModeParam.then(onGot, onError); 
 });
+
 
 /******************************************************/
 /* Function definitions */
@@ -19,17 +20,19 @@ loadScript("DarkReader", function() {
  * loaded.
  * Source: https://stackoverflow.com/questions/8618464/how-to-wait-for-another-js-to-load-to-proceed-operation
  * param: 
- * name - name of the object to wait for
+ * scriptName - name of the object to wait for
  * callback - the function to execute after load
  * */
-function loadScript(name, callback) {
-    setTimeout(function() {
-        if (name) {
-            callback(name);
-        } else {
-            whenAvailable(name, callback);
+async function loadScript(scriptName, callback) {
+    try {
+        const gettingScript = await scriptName;
+        const script = await gettingScript;
+        if(script) {
+            callback();
         }
-    }, 10);
+    } catch(err) {
+        console.log("Script", scriptName, "could not be loaded.");
+    }
 }
 
 /** Function that activates DarkReader.

@@ -16,23 +16,23 @@ gettingItem.then(onGot, onError);
 let tabsId = null;
 
 // UI internationalization 
-var gCalButtonLabel = browser.i18n.getMessage("gCalButton");
+let gCalButtonLabel = browser.i18n.getMessage("gCalButton");
 gCalButton.firstChild.textContent = gCalButtonLabel;
 
 const modeSwitcherContainer = document.getElementById("switchModeLabel");
-var modeSwitcherLabel = browser.i18n.getMessage("modeSwitcher");
+let modeSwitcherLabel = browser.i18n.getMessage("modeSwitcher");
 modeSwitcherContainer.textContent = modeSwitcherLabel;
 
 const addAccountIcon = document.getElementById("addAccountIcon");
-var addAccountLabel = browser.i18n.getMessage("addAccount");
+let addAccountLabel = browser.i18n.getMessage("addAccount");
 addAccountIcon.setAttribute("title", addAccountLabel);
 
 const switchAccountIcon = document.getElementById("switchAccountIcon");
-var switchAccountLabel = browser.i18n.getMessage("switchAccount");
+let switchAccountLabel = browser.i18n.getMessage("switchAccount");
 switchAccountIcon.setAttribute("title", switchAccountLabel);
 
 const signOutIcon = document.getElementById("signOutIcon");
-var signOutLabel = browser.i18n.getMessage("signOut");
+let signOutLabel = browser.i18n.getMessage("signOut");
 signOutIcon.setAttribute("title", signOutLabel);
 
 // Add click listeners to page
@@ -57,11 +57,9 @@ function openOrUpdateTab(url) {
     };
 
     if (tabsId === null) {
-        console.log(tabsId);
         browser.tabs.create(tabProperties);
         keepTabUnique();
     } else {
-        console.log(tabsId);
         browser.tabs.update(tabsId, tabProperties);
         keepTabUnique();
     }
@@ -138,7 +136,7 @@ function onGot(item) {
 
 /** Function that log error in console.
  * Called if local storage value retrieve or if tab
- * scanning to find a Google Calndar tab in Thunderbird
+ * scanning to find a Google Calendar tab in Thunderbird
  * failed.
  * */
 function onError(error) {
