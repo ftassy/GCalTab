@@ -12,11 +12,15 @@
         }
     },
     "permissions": [
-        "*://calendar.google.com/*",
-        "*://accounts.google.com/*",
-        "*://google.com/calendar*",
         "storage",
-        "tabs"
+        "tabs",
+        "https://calendar.google.com/*",
+        "https://accounts.google.com/*",
+        "https://google.com/calendar*",
+        "https://keep.google.com/*",
+        "https://tasks.google.com/*",
+        "https://*.gstatic.com/*",
+        "https://fonts.googleapis.com/*"
     ],
     "browser_action": {
         "default_popup": "popup.html",
@@ -31,14 +35,19 @@
     "content_scripts": [
         {
             "matches": [
-                "*://calendar.google.com/*",
-                "*://accounts.google.com/*",
-                "*://google.com/calendar*"
+                "https://calendar.google.com/*",
+                "https://accounts.google.com/*",
+                "https://google.com/calendar*",
+                "https://keep.google.com/*",
+                "https://tasks.google.com/*",
+                "https://*.gstatic.com/*",
+                "https://fonts.googleapis.com/*"
             ],
             "js": [
                 "lib/darkreader/darkreader.js",
                 "js/gcaltab.js"
-            ]
+            ],
+            "all_frames": true
         }
     ]
 }
