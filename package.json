@@ -4,15 +4,24 @@
   "description": "Google Calendar one tab away!",
   "main": "gcaltab.js",
   "scripts": {
-    "test": "mkdir lib lib/spectre.css/ lib/spectre.css/dist/ lib/darkreader/ && cp node_modules/spectre.css/dist/spectre.css lib/spectre.css/dist/ && cp node_modules/spectre.css/LICENSE lib/spectre.css/ && cp node_modules/darkreader/darkreader.js lib/darkreader/ && cp node_modules/darkreader/LICENSE lib/darkreader/ && web-ext lint --ignore-files=package.json package-lock.json images README.md && rm -r lib",
-    "build": "mkdir lib lib/spectre.css/ lib/spectre.css/dist/ lib/darkreader/ && cp node_modules/spectre.css/dist/spectre.css lib/spectre.css/dist/ && cp node_modules/spectre.css/LICENSE lib/spectre.css/ && cp node_modules/darkreader/darkreader.js lib/darkreader/ && cp node_modules/darkreader/LICENSE lib/darkreader/ && web-ext build --ignore-files=package.json package-lock.json images README.md --overwrite-dest && rm -r lib",
+    "clean-lib": "rm -r lib",
+    "build-lib": "mkdir lib lib/spectre.css/ lib/spectre.css/dist/ lib/darkreader/ && cp node_modules/spectre.css/dist/spectre.css lib/spectre.css/dist/ && cp node_modules/spectre.css/LICENSE lib/spectre.css/ && cp node_modules/darkreader/darkreader.js lib/darkreader/ && cp node_modules/darkreader/LICENSE lib/darkreader/",
+    "test": "npx web-ext lint --ignore-files=package.json package-lock.json images README.md",
+    "start": "npx web-ext run --browser-console -f thunderbird",
+    "start60": "npx web-ext run --browser-console -f $THUNDERBIRD_60/thunderbird",
+    "start68": "npx web-ext run --browser-console -f $THUNDERBIRD_68/thunderbird",
+    "start-beta": "npx web-ext run --browser-console -f $THUNDERBIRD_BETA/thunderbird",
+    "build": "npx web-ext build --ignore-files=package.json package-lock.json images README.md --overwrite-dest",
     "check-lib": "npm outdated"
   },
   "author": "Florent Tassy",
   "license": "MIT",
   "dependencies": {
-    "darkreader": "^4.9.17",
+    "darkreader": "^4.9.33",
     "spectre.css": "^0.5.9"
   },
-  "homepage": "https://github.com/ftassy/GCalTab"
+  "homepage": "https://github.com/ftassy/GCalTab",
+  "devDependencies": {
+    "web-ext": "^6.1.0"
+  }
 }
