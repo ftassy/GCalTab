@@ -35,6 +35,10 @@ GCalTab will need to access your data for:
 * accounts.google.com  
 * calendar.google.com  
 * google.com  
+* keep.google.com  
+* tasks.google.com
+* gstatic.com
+* fonts.googleapis.com
 
 In addition, GCalTab will need to access Thunderbird tabs to maintain a unique tab.
 
@@ -100,7 +104,7 @@ GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
-1.1.0 -> addition of i18n, upgrade to DarkReader v4.9.17  
+1.1.0 -> addition of i18n, upgrade to DarkReader v4.9.33, DarkReader now applies to Keep and Tasks  
 1.0.0 -> npm is now used to manage 3rd party libraries, upgrade to DarkReader v4.9.16 and Spectre.css v0.5.9  
 0.7 -> addition of buttons to ease multiple accounts management  
 0.6 -> upgrade to DarkReader v4.9.10  
