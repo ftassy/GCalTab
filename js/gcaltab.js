@@ -3,13 +3,15 @@
 /******************************************************/
 
 /* Wait for DarkReader script load. Once loaded, 
-depending on the value in local sotrage, trigger 
+depending on the value in local storage, trigger 
 or not the DarkReader activation. */
 loadScript("DarkReader", function() {
     let gettingDarkModeParam = browser.storage.local.get("darkModeGCalTab");
     gettingDarkModeParam.then(onGot, onError); 
 });
 
+/** Listen to localStorage change */
+browser.storage.onChanged.addListener(onGot);
 
 /******************************************************/
 /* Function definitions */
@@ -58,7 +60,6 @@ function inactivateDarkReader() {
  * Called if local storage value retrieve succeeded.
  * */
 function onGot(item) {
-    browser.storage.onChanged.addListener(onGot);
     for (let key in item) {
         if (key === "darkModeGCalTab") {
             let darkMode = null;
