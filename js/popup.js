@@ -10,7 +10,7 @@ const signOutButton = document.getElementById("signOut");
 
 // Initialize the switch button per local storage value
 let gettingItem = browser.storage.local.get("darkModeGCalTab");
-gettingItem.then(onGot, onError);
+gettingItem.then(onLocalStorageGot, onLocalStorageError);
 
 // Initialize id of active Google Calendar tab
 let tabsId = null;
@@ -119,17 +119,11 @@ function retrieveGCalTab(tabs) {
  * the dark mode value in local storage.
  * Called if local storage value retrieve succeeded.
  * */
-function onGot(item) {
+function onLocalStorageGot(item) {
     for (let key in item) {
         if (key === "darkModeGCalTab") {
             let darkMode = item[key];
             modeSwitcher.checked = darkMode;
-            if (darkMode) {
-                setDarkMode();
-            }
-            if (!darkMode) {
-                setLightMode();
-            }
         }
     }
 }
@@ -139,35 +133,15 @@ function onGot(item) {
  * scanning to find a Google Calendar tab in Thunderbird
  * failed.
  * */
-function onError(error) {
+function onLocalStorageError(error) {
     console.log(`Error GCT: ${error}`);
 }
 
 /** Function triggered when "Dark" button is switched on/off
  * */
 function switchMode() {
-    let buttonValue = document.getElementById("switchMode").checked ? true : false;
+    let buttonValue = document.getElementById("switchMode").checked;
     browser.storage.local.set({
-        darkModeGCalTab: buttonValue,
+        "darkModeGCalTab": buttonValue,
     });
-    if (buttonValue) {
-        setDarkMode();
-    }
-    if (!buttonValue) {
-        setLightMode();
-    }
-}
-
-/** Function that sets the popup to its light mode
- * */
-function setLightMode() {
-    document.body.style.setProperty("color", "#323232");
-    document.body.style.setProperty("background-color", "#dcdcdc");
-}
-
-/** Function that sets the popup to its dark mode
- * */
-function setDarkMode() {
-    document.body.style.setProperty("color", "#dcdcdc");
-    document.body.style.setProperty("background-color", "#323232");
 }
