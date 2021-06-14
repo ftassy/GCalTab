@@ -79,8 +79,6 @@ If you have ever connected to the account you wish to switch to, you can click t
 If you wish to connect to a new account, this can be done by clicking the "Add account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-plus-solid.png" alt="Add account icon" height="16px">.  
 
 ## Build from source
-Prerequisite:  
-Install [web-ext](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/).  
 
 The add-on can be built by running the following command from its root directory:  
 ```
