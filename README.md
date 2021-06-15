@@ -82,7 +82,7 @@ If you wish to connect to a new account, this can be done by clicking the "Add a
 
 The add-on can be built by running the following command from its root directory:  
 ```
-npm install
+npm ci
 npm run build
 ```
 
