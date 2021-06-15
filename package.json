@@ -16,6 +16,10 @@
   },
   "author": "Florent Tassy",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ftassy/GCalTab.git"
+  },
   "dependencies": {
     "darkreader": "^4.9.33",
     "spectre.css": "^0.5.9"
