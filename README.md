@@ -102,6 +102,7 @@ GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
+1.1.2 -> upgrade to DarkReader v4.9.35, upgrade to web-ext 6.4.0
 1.1.1 -> updated indirect dependencies versions due to security fixes
 1.1.0 -> addition of i18n, upgrade to DarkReader v4.9.33, changed manifest so that DarkReader applies to Keep and Tasks  
 1.0.0 -> npm is now used to manage 3rd party libraries, upgrade to DarkReader v4.9.16 and Spectre.css v0.5.9  

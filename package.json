@@ -1,6 +1,6 @@
 {
   "name": "gcaltab",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Google Calendar one tab away!",
   "main": "gcaltab.js",
   "scripts": {
@@ -21,11 +21,11 @@
     "url": "https://github.com/ftassy/GCalTab.git"
   },
   "dependencies": {
-    "darkreader": "^4.9.33",
+    "darkreader": "^4.9.35",
     "spectre.css": "^0.5.9"
   },
   "homepage": "https://github.com/ftassy/GCalTab",
   "devDependencies": {
-    "web-ext": "^6.1.0"
+    "web-ext": "^6.4.0"
   }
 }
