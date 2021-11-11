@@ -1,31 +1,31 @@
 {
-  "name": "gcaltab",
-  "version": "1.1.2",
-  "description": "Google Calendar one tab away!",
-  "main": "gcaltab.js",
-  "scripts": {
-    "clean-lib": "rm -r lib",
-    "build-lib": "mkdir lib lib/spectre.css/ lib/spectre.css/dist/ lib/darkreader/ && cp node_modules/spectre.css/dist/spectre.css lib/spectre.css/dist/ && cp node_modules/spectre.css/LICENSE lib/spectre.css/ && cp node_modules/darkreader/darkreader.js lib/darkreader/ && cp node_modules/darkreader/LICENSE lib/darkreader/",
-    "test": "npx web-ext lint --ignore-files=package.json package-lock.json images README.md",
-    "start": "npx web-ext run --browser-console -f thunderbird",
-    "start60": "npx web-ext run --browser-console -f $THUNDERBIRD_60/thunderbird",
-    "start68": "npx web-ext run --browser-console -f $THUNDERBIRD_68/thunderbird",
-    "start-beta": "npx web-ext run --browser-console -f $THUNDERBIRD_BETA/thunderbird",
-    "build": "npx web-ext build --ignore-files=package.json package-lock.json images README.md --overwrite-dest",
-    "check-lib": "npm outdated"
-  },
-  "author": "Florent Tassy",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ftassy/GCalTab.git"
-  },
-  "dependencies": {
-    "darkreader": "^4.9.35",
-    "spectre.css": "^0.5.9"
-  },
-  "homepage": "https://github.com/ftassy/GCalTab",
-  "devDependencies": {
-    "web-ext": "^6.4.0"
-  }
+    "name": "gcaltab",
+    "version": "1.2.0",
+    "description": "Google Calendar one tab away!",
+    "author": "Florent Tassy",
+    "license": "MIT",
+    "homepage": "https://github.com/ftassy/GCalTab",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ftassy/GCalTab.git"
+    },
+    "main": "gcaltab.js",
+    "scripts": {
+        "clean-lib": "rm -r src/lib",
+        "build-lib": "mkdir src/lib src/lib/darkreader/ && cp node_modules/darkreader/darkreader.js src/lib/darkreader/ && cp node_modules/darkreader/LICENSE src/lib/darkreader/",
+        "lint": "npx web-ext lint --source-dir=src --ignore-files=ignored",
+        "startGnuLinux": "npx web-ext run --source-dir=src --browser-console -f thunderbird",
+        "startMacOS": "npx web-ext run --source-dir=src --browser-console -f /Applications/Thunderbird.app/Contents/MacOS/thunderbird",
+        "startUnixBeta": "npx web-ext run --source-dir=src --browser-console -f $THUNDERBIRD_BETA/thunderbird",
+        "startUnix78": "npx web-ext run --source-dir=src --browser-console -f $THUNDERBIRD_78/thunderbird",
+        "startUnix68": "npx web-ext run --source-dir=src --browser-console -f $THUNDERBIRD_68/thunderbird",
+        "build": "npm run clean-lib && npm run build-lib && npx web-ext build --source-dir=src --ignore-files=ignored --overwrite-dest",
+        "check-dep": "npm outdated && npm audit"
+    },
+    "dependencies": {
+        "darkreader": "^4.9.40"
+    },
+    "devDependencies": {
+        "web-ext": "^6.5.0"
+    }
 }

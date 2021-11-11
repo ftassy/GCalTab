@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/icons/gcaltab.png" alt="GCalTab icon menu"></p>
+<p align="center"><img src="src/icons/gcaltab.png" alt="GCalTab icon menu"></p>
 
 # GCalTab 
 GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab. It facilitates multiple accounts management.
@@ -18,10 +18,10 @@ Once the add-on is installed, a new icon appears in Thunderbird Mail toolbar:
 ![Thunderbird Mail toolbar](images/GCalTab_browser_action.png)
 
 Click on it to see GCalTab menu:  
-<p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/images/GCalTab_popup.png" alt="Thunderbird menu"></p>
+<p align="center"><img src="images/GCalTab_popup.png" alt="Thunderbird menu"></p>
 
 Click on "Open" to open the Google Calendar tab:  
-<p align="center"><img src="https://github.com/ftassy/GCalTab/blob/master/images/Google_Calendar_dark.png" alt="Thunderbird menu"></p>
+<p align="center"><img src="images/Google_Calendar_dark.png" alt="Thunderbird menu"></p>
 
 You can switch on/off the "Dark" button to activate DarkReader on the Google Calendar tab.
 
@@ -70,13 +70,13 @@ You will have to allow and keep cookies for these three domains:
 
 ### How do I disconnect from a Google Calendar account ?
 If you use the Google Calendar "Sign out" button, the link will open in your web browser and will not disconnect Thunderbird but your web browser session.  
-**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/sign-out-alt-solid.png" alt="Sign out icon" height="16px">.  
+**Since version 0.5**, it is possible to sign out from GCalTab menu by pushing the "Sign out" button <img src="images/sign-out-alt-solid.png" alt="Sign out icon" height="16px">.  
 
 ### How do I switch to another Google Calendar account ? 
 If you use the Google Calendar "Add account" or "Manage your Google Account" button, the link will open in your web browser and will not change your Thunderbird session.  
 **Since version 0.7**  
-If you have ever connected to the account you wish to switch to, you can click the "Switch account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-friends-solid.png" alt="Switch account icon" height="16px">.  
-If you wish to connect to a new account, this can be done by clicking the "Add account" button <img src="https://github.com/ftassy/GCalTab/blob/master/images/user-plus-solid.png" alt="Add account icon" height="16px">.  
+If you have ever connected to the account you wish to switch to, you can click the "Switch account" button <img src="images/user-friends-solid.png" alt="Switch account icon" height="16px">.  
+If you wish to connect to a new account, this can be done by clicking the "Add account" button <img src="images/user-plus-solid.png" alt="Add account icon" height="16px">.  
 
 ## Build from source
 
@@ -98,12 +98,12 @@ The above-mentioned trademarks are only used to refer to products.
 GCalTab and its developer are not affiliated, sponsored nor endorsed by any of the above-mentioned organizations.  
 
 ## Acknowledgments
-GCalTab is styled with [Spectre.css](https://picturepan2.github.io/spectre/)  
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
-1.1.2 -> upgrade to DarkReader v4.9.35, upgrade to web-ext 6.4.0
-1.1.1 -> updated indirect dependencies versions due to security fixes
+1.2.0 -> Switch from Spectre.css to home-made CSS for popup, upgrade to DarkReader v4.9.40, upgrade to web-ext v6.5.0  
+1.1.2 -> upgrade to DarkReader v4.9.35, upgrade to web-ext 6.4.0  
+1.1.1 -> updated indirect dependencies versions due to security fixes  
 1.1.0 -> addition of i18n, upgrade to DarkReader v4.9.33, changed manifest so that DarkReader applies to Keep and Tasks  
 1.0.0 -> npm is now used to manage 3rd party libraries, upgrade to DarkReader v4.9.16 and Spectre.css v0.5.9  
 0.7 -> addition of buttons to ease multiple accounts management  

@@ -1,5 +1,5 @@
 /**
- * Dark Reader v4.9.35
+ * Dark Reader v4.9.40
  * https://darkreader.org/
  */
 
@@ -7,7 +7,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.DarkReader = {}));
-}(this, (function (exports) { 'use strict';
+})(this, (function (exports) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -109,7 +109,7 @@
                 ar[i] = from[i];
             }
         }
-        return to.concat(ar || from);
+        return to.concat(ar || Array.prototype.slice.call(from));
     }
 
     var MessageType = {
@@ -337,7 +337,7 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            sendMessage.apply(void 0, __spreadArray([], __read(args)));
+            sendMessage.apply(void 0, __spreadArray([], __read(args), false));
             nativeSendMessage_1.apply(chrome.runtime, args);
         };
     }
@@ -354,12 +354,18 @@
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            addMessageListener.apply(void 0, __spreadArray([], __read(args)));
+            addMessageListener(args[0]);
             nativeAddListener_1.apply(chrome.runtime.onMessage, args);
         };
     }
     else {
-        chrome.runtime.onMessage.addListener = addMessageListener;
+        chrome.runtime.onMessage.addListener = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return addMessageListener(args[0]);
+        };
     }
 
     var ThemeEngines = {
@@ -397,6 +403,8 @@
         scrollbarColor: isMacOS ? '' : 'auto',
         selectionColor: 'auto',
         styleSystemControls: true,
+        lightColorScheme: 'Default',
+        darkColorScheme: 'Default',
     };
 
     function isArrayLike(items) {
@@ -463,11 +471,11 @@
                 pending = true;
             }
             else {
-                callback.apply(void 0, __spreadArray([], __read(lastArgs)));
+                callback.apply(void 0, __spreadArray([], __read(lastArgs), false));
                 frameId = requestAnimationFrame(function () {
                     frameId = null;
                     if (pending) {
-                        callback.apply(void 0, __spreadArray([], __read(lastArgs)));
+                        callback.apply(void 0, __spreadArray([], __read(lastArgs), false));
                         pending = false;
                     }
                 });
@@ -687,6 +695,7 @@
                 if (n instanceof Element) {
                     if (n.isConnected) {
                         moves.add(n);
+                        additions.delete(n);
                     }
                     else {
                         deletions.add(n);
@@ -694,7 +703,6 @@
                 }
             });
         });
-        moves.forEach(function (n) { return additions.delete(n); });
         var duplicateAdditions = [];
         var duplicateDeletions = [];
         additions.forEach(function (node) {
@@ -799,9 +807,31 @@
         if ($relative.match(/^data\\?\:/)) {
             return $relative;
         }
+        if (/^\/\//.test($relative)) {
+            return "" + location.protocol + $relative;
+        }
         var b = parseURL($base);
         var a = parseURL($relative, b.href);
         return a.href;
+    }
+    function isRelativeHrefOnAbsolutePath(href) {
+        if (href.startsWith('data:')) {
+            return true;
+        }
+        var url = parseURL(href);
+        var base = parseURL(location.href);
+        if (url.protocol !== base.protocol) {
+            return false;
+        }
+        if (url.hostname !== base.hostname) {
+            return false;
+        }
+        if (url.port !== base.port) {
+            return false;
+        }
+        var path = /.*\//.exec(url.pathname)[0];
+        var basePath = /.*\//.exec(base.pathname)[0];
+        return path === basePath;
     }
 
     function iterateCSSRules(rules, iterate, onMediaRuleError) {
@@ -884,7 +914,7 @@
     var cssURLRegex = /url\((('.+?')|(".+?")|([^\)]*?))\)/g;
     var cssImportRegex = /@import\s*(url\()?(('.+?')|(".+?")|([^\)]*?))\)?;?/g;
     function getCSSURLValue(cssURL) {
-        return cssURL.replace(/^url\((.*)\)$/, '$1').replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+        return cssURL.replace(/^url\((.*)\)$/, '$1').trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
     }
     function getCSSBaseBath(url) {
         var cssURL = parseURL(url);
@@ -1006,8 +1036,33 @@
         }
         throw new Error("Unable to parse " + $color);
     }
-    function getNumbersFromString(str, splitter, range, units) {
-        var raw = str.split(splitter).filter(function (x) { return x; });
+    function getNumbers($color) {
+        var numbers = [];
+        var prevPos = 0;
+        var isMining = false;
+        var startIndex = $color.indexOf('(');
+        $color = $color.substring(startIndex + 1, $color.length - 1);
+        for (var i = 0; i < $color.length; i++) {
+            var c = $color[i];
+            if (c >= '0' && c <= '9' || c === '.' || c === '+' || c === '-') {
+                isMining = true;
+            }
+            else if (isMining && (c === ' ' || c === ',')) {
+                numbers.push($color.substring(prevPos, i));
+                isMining = false;
+                prevPos = i + 1;
+            }
+            else if (!isMining) {
+                prevPos = i + 1;
+            }
+        }
+        if (isMining) {
+            numbers.push($color.substring(prevPos, $color.length));
+        }
+        return numbers;
+    }
+    function getNumbersFromString(str, range, units) {
+        var raw = getNumbers(str);
         var unitsList = Object.entries(units);
         var numbers = raw.map(function (r) { return r.trim(); }).map(function (r, i) {
             var n;
@@ -1028,18 +1083,16 @@
         });
         return numbers;
     }
-    var rgbSplitter = /rgba?|\(|\)|\/|,|\s/ig;
     var rgbRange = [255, 255, 255, 1];
     var rgbUnits = { '%': 100 };
     function parseRGB($rgb) {
-        var _a = __read(getNumbersFromString($rgb, rgbSplitter, rgbRange, rgbUnits), 4), r = _a[0], g = _a[1], b = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
+        var _a = __read(getNumbersFromString($rgb, rgbRange, rgbUnits), 4), r = _a[0], g = _a[1], b = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
         return { r: r, g: g, b: b, a: a };
     }
-    var hslSplitter = /hsla?|\(|\)|\/|,|\s/ig;
     var hslRange = [360, 1, 1, 1];
     var hslUnits = { '%': 100, 'deg': 360, 'rad': 2 * Math.PI, 'turn': 1 };
     function parseHSL($hsl) {
-        var _a = __read(getNumbersFromString($hsl, hslSplitter, hslRange, hslUnits), 4), h = _a[0], s = _a[1], l = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
+        var _a = __read(getNumbersFromString($hsl, hslRange, hslUnits), 4), h = _a[0], s = _a[1], l = _a[2], _b = _a[3], a = _b === void 0 ? 1 : _b;
         return hslToRGB({ h: h, s: s, l: l, a: a });
     }
     function parseHex($hex) {
@@ -1077,6 +1130,72 @@
             b: (n >> 0) & 255,
             a: 1
         };
+    }
+    var isCharDigit = function (char) { return char >= '0' && char <= '9'; };
+    var getAmountOfDigits = function (number) { return Math.floor(Math.log10(number)) + 1; };
+    function lowerCalcExpression(color) {
+        var searchIndex = 0;
+        var replaceBetweenIndices = function (start, end, replacement) {
+            color = color.substring(0, start) + replacement + color.substring(end);
+        };
+        var getNumber = function () {
+            var resultNumber = 0;
+            for (var i = 1; i < 4; i++) {
+                var char = color[searchIndex + i];
+                if (char === ' ') {
+                    break;
+                }
+                if (isCharDigit(char)) {
+                    resultNumber *= 10;
+                    resultNumber += Number(char);
+                }
+                else {
+                    break;
+                }
+            }
+            var lenDigits = getAmountOfDigits(resultNumber);
+            searchIndex += lenDigits;
+            var possibleType = color[searchIndex + 1];
+            if (possibleType !== '%') {
+                return;
+            }
+            searchIndex++;
+            return resultNumber;
+        };
+        while ((searchIndex = color.indexOf('calc(')) !== 0) {
+            var startIndex = searchIndex;
+            searchIndex += 4;
+            var firstNumber = getNumber();
+            if (!firstNumber) {
+                break;
+            }
+            if (color[searchIndex + 1] !== ' ') {
+                break;
+            }
+            searchIndex++;
+            var operation = color[searchIndex + 1];
+            if (operation !== '+' && operation !== '-') {
+                break;
+            }
+            searchIndex++;
+            if (color[searchIndex + 1] !== ' ') {
+                break;
+            }
+            searchIndex++;
+            var secondNumber = getNumber();
+            if (!secondNumber) {
+                break;
+            }
+            var replacement = void 0;
+            if (operation === '+') {
+                replacement = firstNumber + secondNumber + "%";
+            }
+            else {
+                replacement = firstNumber - secondNumber + "%";
+            }
+            replaceBetweenIndices(startIndex, searchIndex + 2, replacement);
+        }
+        return color;
     }
     var knownColors = new Map(Object.entries({
         aliceblue: 0xf0f8ff,
@@ -1481,9 +1600,14 @@
     var rgbCacheKeys = ['r', 'g', 'b', 'a'];
     var themeCacheKeys$1 = ['mode', 'brightness', 'contrast', 'grayscale', 'sepia', 'darkSchemeBackgroundColor', 'darkSchemeTextColor', 'lightSchemeBackgroundColor', 'lightSchemeTextColor'];
     function getCacheId(rgb, theme) {
-        return rgbCacheKeys.map(function (k) { return rgb[k]; })
-            .concat(themeCacheKeys$1.map(function (k) { return theme[k]; }))
-            .join(';');
+        var resultId = '';
+        rgbCacheKeys.forEach(function (key) {
+            resultId += rgb[key] + ";";
+        });
+        themeCacheKeys$1.forEach(function (key) {
+            resultId += theme[key] + ";";
+        });
+        return resultId;
     }
     function modifyColorWithCache(rgb, theme, modifyHSL, poleColor, anotherPoleColor) {
         var fnCache;
@@ -1809,7 +1933,7 @@
                                 case 3:
                                     error_1 = _a.sent();
                                     reject(error_1);
-                                    return [3, 4];
+                                    return [2];
                                 case 4:
                                     _a.trys.push([4, 6, , 7]);
                                     return [4, urlToImage(dataURL)];
@@ -2130,7 +2254,7 @@
     function getModifiedFallbackStyle(filter, _a) {
         var strict = _a.strict;
         var lines = [];
-        lines.push("html, body, " + (strict ? 'body :not(iframe)' : 'body > :not(iframe)') + " {");
+        lines.push("html, body, " + (strict ? 'body :not(iframe):not(div[style^="position:absolute;top:0;left:-"]' : 'body > :not(iframe)') + " {");
         lines.push("    background-color: " + modifyBackgroundColor({ r: 255, g: 255, b: 255 }, filter) + " !important;");
         lines.push("    border-color: " + modifyBorderColor({ r: 64, g: 64, b: 64 }, filter) + " !important;");
         lines.push("    color: " + modifyForegroundColor({ r: 0, g: 0, b: 0 }, filter) + " !important;");
@@ -2150,6 +2274,9 @@
         $color = $color.trim();
         if (colorParseCache.has($color)) {
             return colorParseCache.get($color);
+        }
+        if ($color.includes('calc(')) {
+            $color = lowerCalcExpression($color);
         }
         var color = parse($color);
         colorParseCache.set($color, color);
@@ -2375,10 +2502,11 @@
             return null;
         }
     }
-    function getShadowModifier(value) {
+    function getShadowModifierWithInfo(value) {
         try {
             var index_2 = 0;
-            var colorMatches_1 = getMatches(/(^|\s)([a-z]+\(.+?\)|#[0-9a-f]+|[a-z]+)(.*?(inset|outset)?($|,))/ig, value, 2);
+            var colorMatches_1 = getMatches(/(^|\s)(?!calc)([a-z]+\(.+?\)|#[0-9a-f]+|[a-z]+)(.*?(inset|outset)?($|,))/ig, value, 2);
+            var notParsed_1 = 0;
             var modifiers_2 = colorMatches_1.map(function (match, i) {
                 var prefixIndex = index_2;
                 var matchIndex = value.indexOf(match, index_2);
@@ -2386,16 +2514,31 @@
                 index_2 = matchEnd;
                 var rgb = tryParseColor(match);
                 if (!rgb) {
+                    notParsed_1++;
                     return function () { return value.substring(prefixIndex, matchEnd); };
                 }
                 return function (filter) { return "" + value.substring(prefixIndex, matchIndex) + modifyShadowColor(rgb, filter) + (i === colorMatches_1.length - 1 ? value.substring(matchEnd) : ''); };
             });
-            return function (filter) { return modifiers_2.map(function (modify) { return modify(filter); }).join(''); };
+            return function (filter) {
+                var modified = modifiers_2.map(function (modify) { return modify(filter); }).join('');
+                return {
+                    matchesLength: colorMatches_1.length,
+                    unparseableMatchesLength: notParsed_1,
+                    result: modified,
+                };
+            };
         }
         catch (err) {
             logWarn("Unable to parse shadow " + value, err);
             return null;
         }
+    }
+    function getShadowModifier(value) {
+        var shadowModifier = getShadowModifierWithInfo(value);
+        if (!shadowModifier) {
+            return null;
+        }
+        return function (theme) { return shadowModifier(theme).result; };
     }
     function getVariableModifier(variablesStore, prop, value, rule, ignoredImgSelectors, isCancelled) {
         return variablesStore.getModifierForVariable({
@@ -2460,8 +2603,7 @@
             this.changedTypeVars.clear();
             this.initialVarTypes = new Map(this.varTypes);
             this.collectRootVariables();
-            this.rulesQueue.forEach(function (rules) { return _this.collectVariables(rules); });
-            this.rulesQueue.forEach(function (rules) { return _this.collectVarDependants(rules); });
+            this.collectVariablesAndVarDep(this.rulesQueue);
             this.rulesQueue.splice(0);
             this.collectRootVarDependants();
             this.varRefs.forEach(function (refs, v) {
@@ -2586,7 +2728,7 @@
             var _this = this;
             if (sourceValue.match(/^\s*(rgb|hsl)a?\(/)) {
                 var isBg_1 = property.startsWith('background');
-                var isText_1 = property === 'color';
+                var isText_1 = (property === 'color' || property === 'caret-color');
                 return function (theme) {
                     var value = insertVarValues(sourceValue, _this.unstableVarValues);
                     if (!value) {
@@ -2601,7 +2743,7 @@
                     return replaceCSSVariablesNames(sourceValue, function (v) { return wrapBgColorVariableName(v); }, function (fallback) { return tryModifyBgColor(fallback, theme); });
                 };
             }
-            if (property === 'color') {
+            if (property === 'color' || property === 'caret-color') {
                 return function (theme) {
                     return replaceCSSVariablesNames(sourceValue, function (v) { return wrapTextColorVariableName(v); }, function (fallback) { return tryModifyTextColor(fallback, theme); });
                 };
@@ -2609,16 +2751,26 @@
             if (property === 'background' || property === 'background-image' || property === 'box-shadow') {
                 return function (theme) {
                     var unknownVars = new Set();
-                    var modify = function () { return replaceCSSVariablesNames(sourceValue, function (v) {
-                        if (_this.isVarType(v, VAR_TYPE_BGCOLOR)) {
-                            return wrapBgColorVariableName(v);
+                    var modify = function () {
+                        var variableReplaced = replaceCSSVariablesNames(sourceValue, function (v) {
+                            if (_this.isVarType(v, VAR_TYPE_BGCOLOR)) {
+                                return wrapBgColorVariableName(v);
+                            }
+                            if (_this.isVarType(v, VAR_TYPE_BGIMG)) {
+                                return wrapBgImgVariableName(v);
+                            }
+                            unknownVars.add(v);
+                            return v;
+                        }, function (fallback) { return tryModifyBgColor(fallback, theme); });
+                        if (property === 'box-shadow') {
+                            var shadowModifier = getShadowModifierWithInfo(variableReplaced);
+                            var modifiedShadow = shadowModifier(theme);
+                            if (modifiedShadow.unparseableMatchesLength !== modifiedShadow.matchesLength) {
+                                return modifiedShadow.result;
+                            }
                         }
-                        if (_this.isVarType(v, VAR_TYPE_BGIMG)) {
-                            return wrapBgImgVariableName(v);
-                        }
-                        unknownVars.add(v);
-                        return v;
-                    }, function (fallback) { return tryModifyBgColor(fallback, theme); }); };
+                        return variableReplaced;
+                    };
                     var modified = modify();
                     if (unknownVars.size > 0) {
                         return new Promise(function (resolve) {
@@ -2672,10 +2824,19 @@
                 this.typeChangeSubscriptions.get(varName).delete(callback);
             }
         };
-        VariablesStore.prototype.collectVariables = function (rules) {
+        VariablesStore.prototype.collectVariablesAndVarDep = function (ruleList) {
             var _this = this;
-            iterateVariables(rules, function (varName, value) {
-                _this.inspectVariable(varName, value);
+            ruleList.forEach(function (rules) {
+                iterateCSSRules(rules, function (rule) {
+                    rule.style && iterateCSSDeclarations(rule.style, function (property, value) {
+                        if (isVariable(property)) {
+                            _this.inspectVariable(property, value);
+                        }
+                        if (isVarDependant(value)) {
+                            _this.inspectVarDependant(property, value);
+                        }
+                    });
+                });
             });
         };
         VariablesStore.prototype.collectRootVariables = function () {
@@ -2718,21 +2879,15 @@
             this.unknownColorVars.delete(varName);
             this.unknownBgVars.delete(varName);
         };
-        VariablesStore.prototype.collectVarDependants = function (rules) {
-            var _this = this;
-            iterateVarDependants(rules, function (property, value) {
-                _this.inspectVerDependant(property, value);
-            });
-        };
         VariablesStore.prototype.collectRootVarDependants = function () {
             var _this = this;
             iterateCSSDeclarations(document.documentElement.style, function (property, value) {
                 if (isVarDependant(value)) {
-                    _this.inspectVerDependant(property, value);
+                    _this.inspectVarDependant(property, value);
                 }
             });
         };
-        VariablesStore.prototype.inspectVerDependant = function (property, value) {
+        VariablesStore.prototype.inspectVarDependant = function (property, value) {
             var _this = this;
             if (isVariable(property)) {
                 this.iterateVarDeps(value, function (ref) {
@@ -2745,7 +2900,7 @@
             else if (property === 'background-color' || property === 'box-shadow') {
                 this.iterateVarDeps(value, function (v) { return _this.resolveVariableType(v, VAR_TYPE_BGCOLOR); });
             }
-            else if (property === 'color') {
+            else if (property === 'color' || property === 'caret-color') {
                 this.iterateVarDeps(value, function (v) { return _this.resolveVariableType(v, VAR_TYPE_TEXTCOLOR); });
             }
             else if (property.startsWith('border') || property.startsWith('outline')) {
@@ -2936,24 +3091,6 @@
             return "var(" + newName + ", " + newFallback + ")";
         };
         return replaceVariablesMatches(value, matchReplacer);
-    }
-    function iterateVariables(rules, iterator) {
-        iterateCSSRules(rules, function (rule) {
-            rule.style && iterateCSSDeclarations(rule.style, function (property, value) {
-                if (property.startsWith('--')) {
-                    iterator(property, value);
-                }
-            });
-        });
-    }
-    function iterateVarDependants(rules, iterator) {
-        iterateCSSRules(rules, function (rule) {
-            rule.style && iterateCSSDeclarations(rule.style, function (property, value) {
-                if (isVarDependant(value)) {
-                    iterator(property, value);
-                }
-            });
-        });
     }
     function iterateVarDependencies(value, iterator) {
         replaceCSSVariablesNames(value, function (varName) {
@@ -3179,7 +3316,7 @@
         });
         var attrObserver = new MutationObserver(function (mutations) {
             if (timeoutId) {
-                cache.push.apply(cache, __spreadArray([], __read(mutations)));
+                cache.push.apply(cache, __spreadArray([], __read(mutations), false));
                 return;
             }
             attemptCount++;
@@ -3197,7 +3334,7 @@
                         cache = [];
                         handleAttributeMutations(attributeCache);
                     }, RETRY_TIMEOUT);
-                    cache.push.apply(cache, __spreadArray([], __read(mutations)));
+                    cache.push.apply(cache, __spreadArray([], __read(mutations), false));
                     return;
                 }
                 start = now;
@@ -3322,7 +3459,11 @@
             }
             else {
                 var overridenProp = normalizedPropList[property];
-                if (overridenProp && (!element.style.getPropertyValue(overridenProp) && !element.hasAttribute(overridenProp))) {
+                if (overridenProp &&
+                    (!element.style.getPropertyValue(overridenProp) && !element.hasAttribute(overridenProp))) {
+                    if (overridenProp === 'background-color' && element.hasAttribute('bgcolor')) {
+                        return;
+                    }
                     element.style.setProperty(property, '');
                 }
             }
@@ -3551,7 +3692,7 @@
                             return { property: mod.property, value: mod.value, important: important, sourceValue: sourceValue, varKey: varKey };
                         });
                         var index = readyDeclarations.indexOf(oldDecs[0], initialIndex);
-                        readyDeclarations.splice.apply(readyDeclarations, __spreadArray([index, oldDecs.length], __read(readyVarDecs)));
+                        readyDeclarations.splice.apply(readyDeclarations, __spreadArray([index, oldDecs.length], __read(readyVarDecs), false));
                         oldDecs = readyVarDecs;
                         rebuildVarRule(varKey);
                     });
@@ -3687,14 +3828,20 @@
         function containsCSSImport() {
             return element instanceof HTMLStyleElement && element.textContent.trim().match(cssImportRegex);
         }
-        function hasCrossOriginImports(cssRules) {
+        function hasImports(cssRules, checkCrossOrigin) {
             var result = false;
             if (cssRules) {
                 var rule = void 0;
                 cssRulesLoop: for (var i = 0, len = cssRules.length; i < len; i++) {
                     rule = cssRules[i];
                     if (rule.href) {
-                        if (rule.href.startsWith('http') && !rule.href.startsWith(location.origin)) {
+                        if (checkCrossOrigin) {
+                            if (rule.href.startsWith('http') && !rule.href.startsWith(location.origin)) {
+                                result = true;
+                                break cssRulesLoop;
+                            }
+                        }
+                        else {
                             result = true;
                             break cssRulesLoop;
                         }
@@ -3705,15 +3852,26 @@
         }
         function getRulesSync() {
             if (corsCopy) {
+                logInfo('[getRulesSync] Using cors-copy.');
                 return corsCopy.sheet.cssRules;
             }
             if (containsCSSImport()) {
+                logInfo('[getRulesSync] CSSImport detected.');
                 return null;
             }
             var cssRules = safeGetSheetRules();
-            if (hasCrossOriginImports(cssRules)) {
+            if (element instanceof HTMLLinkElement &&
+                !isRelativeHrefOnAbsolutePath(element.href) &&
+                hasImports(cssRules, false)) {
+                logInfo('[getRulesSync] CSSImportRule detected on non-local href.');
                 return null;
             }
+            if (hasImports(cssRules, true)) {
+                logInfo('[getRulesSync] Cross-Origin CSSImportRule detected.');
+                return null;
+            }
+            logInfo('[getRulesSync] Using cssRules.');
+            !cssRules && logWarn('[getRulesSync] cssRules is null, trying again.');
             return cssRules;
         }
         function insertStyle() {
@@ -3746,7 +3904,7 @@
         var loadingLinkId = ++loadingLinkCounter;
         function getRulesAsync() {
             return __awaiter(this, void 0, void 0, function () {
-                var cssText, cssBasePath, _a, cssRules, accessError, err_1, crossOriginImport, fullCSSText, err_2;
+                var cssText, cssBasePath, _a, cssRules, accessError, err_1, fullCSSText, err_2;
                 var _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
@@ -3782,9 +3940,13 @@
                             }
                             _c.label = 5;
                         case 5:
-                            crossOriginImport = hasCrossOriginImports(cssRules);
-                            if (cssRules != null && !crossOriginImport) {
-                                return [2, cssRules];
+                            if (cssRules) {
+                                if (isRelativeHrefOnAbsolutePath(element.href)) {
+                                    return [2, cssRules];
+                                }
+                                else if (!hasImports(cssRules, false)) {
+                                    return [2, cssRules];
+                                }
                             }
                             return [4, loadText(element.href)];
                         case 6:
@@ -3858,6 +4020,20 @@
                 return;
             }
             cancelAsyncOperations = false;
+            function removeCSSRulesFromSheet(sheet) {
+                try {
+                    if (sheet.replaceSync) {
+                        sheet.replaceSync('');
+                        return;
+                    }
+                }
+                catch (err) {
+                    logWarn('Could not use fastpath for removing rules from stylesheet', err);
+                }
+                for (var i = sheet.cssRules.length - 1; i >= 0; i--) {
+                    sheet.deleteRule(i);
+                }
+            }
             function prepareOverridesSheet() {
                 if (!syncStyle) {
                     createSyncStyle();
@@ -3868,9 +4044,7 @@
                     syncStyle.textContent = '';
                 }
                 var sheet = syncStyle.sheet;
-                for (var i = sheet.cssRules.length - 1; i >= 0; i--) {
-                    sheet.deleteRule(i);
-                }
+                removeCSSRulesFromSheet(sheet);
                 if (syncStylePositionWatcher) {
                     syncStylePositionWatcher.run();
                 }
@@ -4219,7 +4393,7 @@
             return __generator(this, function (_a) {
                 return [2, new Promise(function (resolve) {
                         if (window.customElements && typeof customElements.whenDefined === 'function') {
-                            customElements.whenDefined(tag).then(resolve);
+                            customElements.whenDefined(tag).then(function () { return resolve(); });
                         }
                         else if (canOptimizeUsingProxy) {
                             resolvers.set(tag, resolve);
@@ -4409,7 +4583,7 @@
     function createAdoptedStyleSheetOverride(node) {
         var cancelAsyncOperations = false;
         function injectSheet(sheet, override) {
-            var newSheets = __spreadArray([], __read(node.adoptedStyleSheets));
+            var newSheets = __spreadArray([], __read(node.adoptedStyleSheets), false);
             var sheetIndex = newSheets.indexOf(sheet);
             var existingIndex = newSheets.indexOf(override);
             if (sheetIndex === existingIndex - 1) {
@@ -4423,7 +4597,7 @@
         }
         function destroy() {
             cancelAsyncOperations = true;
-            var newSheets = __spreadArray([], __read(node.adoptedStyleSheets));
+            var newSheets = __spreadArray([], __read(node.adoptedStyleSheets), false);
             node.adoptedStyleSheets.forEach(function (adoptedStyleSheet) {
                 if (overrideList.has(adoptedStyleSheet)) {
                     var existingIndex = newSheets.indexOf(adoptedStyleSheet);
@@ -4475,10 +4649,7 @@
         var insertRuleDescriptor = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, 'insertRule');
         var deleteRuleDescriptor = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, 'deleteRule');
         var removeRuleDescriptor = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, 'removeRule');
-        var shouldWrapDocStyleSheets = location.hostname.endsWith('pushbullet.com') ||
-            location.hostname.endsWith('ilsole24ore.com') ||
-            location.hostname.endsWith('allegro.pl');
-        var documentStyleSheetsDescriptor = shouldWrapDocStyleSheets ? Object.getOwnPropertyDescriptor(Document.prototype, 'styleSheets') : null;
+        var documentStyleSheetsDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'styleSheets');
         var shouldWrapHTMLElement = location.hostname.endsWith('baidu.com');
         var getElementsByTagNameDescriptor = shouldWrapHTMLElement ?
             Object.getOwnPropertyDescriptor(Element.prototype, 'getElementsByTagName') : null;
@@ -4489,9 +4660,7 @@
             Object.defineProperty(CSSStyleSheet.prototype, 'removeRule', removeRuleDescriptor);
             document.removeEventListener('__darkreader__cleanUp', cleanUp);
             document.removeEventListener('__darkreader__addUndefinedResolver', addUndefinedResolver);
-            if (shouldWrapDocStyleSheets) {
-                Object.defineProperty(Document.prototype, 'styleSheets', documentStyleSheetsDescriptor);
-            }
+            Object.defineProperty(Document.prototype, 'styleSheets', documentStyleSheetsDescriptor);
             if (shouldWrapHTMLElement) {
                 Object.defineProperty(Element.prototype, 'getElementsByTagName', getElementsByTagNameDescriptor);
             }
@@ -4532,7 +4701,7 @@
         }
         function proxyDocumentStyleSheets() {
             var docSheets = documentStyleSheetsDescriptor.get.call(this);
-            var filtered = __spreadArray([], __read(docSheets)).filter(function (styleSheet) {
+            var filtered = __spreadArray([], __read(docSheets), false).filter(function (styleSheet) {
                 return !styleSheet.ownerNode.classList.contains('darkreader');
             });
             return Object.setPrototypeOf(filtered, StyleSheetList.prototype);
@@ -4542,7 +4711,7 @@
             var getCurrentElementValue = function () {
                 var elements = getElementsByTagNameDescriptor.value.call(_this, tagName);
                 if (tagName === 'style') {
-                    elements = Object.setPrototypeOf(__spreadArray([], __read(elements)).filter(function (element) {
+                    elements = Object.setPrototypeOf(__spreadArray([], __read(elements), false).filter(function (element) {
                         return !element.classList.contains('darkreader');
                     }), NodeList.prototype);
                 }
@@ -4551,7 +4720,7 @@
             var elements = getCurrentElementValue();
             var NodeListBehavior = {
                 get: function (_, property) {
-                    return getCurrentElementValue()[property];
+                    return getCurrentElementValue()[Number(property)];
                 }
             };
             elements = new Proxy(elements, NodeListBehavior);
@@ -4561,9 +4730,7 @@
         Object.defineProperty(CSSStyleSheet.prototype, 'insertRule', Object.assign({}, insertRuleDescriptor, { value: proxyInsertRule }));
         Object.defineProperty(CSSStyleSheet.prototype, 'deleteRule', Object.assign({}, deleteRuleDescriptor, { value: proxyDeleteRule }));
         Object.defineProperty(CSSStyleSheet.prototype, 'removeRule', Object.assign({}, removeRuleDescriptor, { value: proxyRemoveRule }));
-        if (shouldWrapDocStyleSheets) {
-            Object.defineProperty(Document.prototype, 'styleSheets', Object.assign({}, documentStyleSheetsDescriptor, { get: proxyDocumentStyleSheets }));
-        }
+        Object.defineProperty(Document.prototype, 'styleSheets', Object.assign({}, documentStyleSheetsDescriptor, { get: proxyDocumentStyleSheets }));
         if (shouldWrapHTMLElement) {
             Object.defineProperty(Element.prototype, 'getElementsByTagName', Object.assign({}, getElementsByTagNameDescriptor, { value: proxyGetElementsByTagName }));
         }
@@ -4667,12 +4834,8 @@
         var rootVarsStyle = createOrUpdateStyle('darkreader--root-vars');
         document.head.insertBefore(rootVarsStyle, variableStyle.nextSibling);
         var proxyScript = createOrUpdateScript('darkreader--proxy');
-        var blob = new Blob(["(" + injectProxy + ")()"], { type: 'text/javascript' });
-        var url = URL.createObjectURL(blob);
-        proxyScript.src = url;
-        proxyScript.textContent = '';
+        proxyScript.append("(" + injectProxy + ")()");
         document.head.insertBefore(proxyScript, rootVarsStyle.nextSibling);
-        URL.revokeObjectURL(url);
         proxyScript.remove();
     }
     var shadowRootsWithOverrides = new Set();
@@ -4698,15 +4861,13 @@
         shadowRootsWithOverrides.add(root);
     }
     function replaceCSSTemplates($cssText) {
-        return $cssText.replace(/\${(.+?)}/g, function (m0, $color) {
-            try {
-                var color = parseColorWithCache($color);
+        return $cssText.replace(/\${(.+?)}/g, function (_, $color) {
+            var color = tryParseColor($color);
+            if (color) {
                 return modifyColor(color, filter);
             }
-            catch (err) {
-                logWarn(err);
-                return $color;
-            }
+            logWarn("Couldn't parse CSSTemplate's color.");
+            return $color;
         });
     }
     function cleanFallbackStyle() {
@@ -5149,4 +5310,4 @@
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>GCalTab</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/popup.css" />
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="row">
+            <img src="icons/gcaltab.png" alt="GCalTab icon" class="logo-GCalTab" />
+            <h1 class="name-GCalTab">
+                GCalTab
+            </h1>
+        </div>
+
+        <div class="row">
+            <hr class="visible" />
+        </div>
+
+        <div class="row">
+            <button id="gcal" class="primary-button">
+                Open
+            </button>
+            <label class="mode-switcher">
+                <input id="switchMode" type="checkbox">
+                <span class="slider"></span>
+            </label>
+            <div id="switchModeLabel">Dark</div>
+        </div>
+
+        <div class="row">
+            <hr />
+        </div>
+
+        <div class="row">
+            <div id="addAccount">
+                <button class="round-button primary-button">
+                    <img src="icons/user-plus-solid.svg" width="22px" alt="Add account" title="Add account"
+                        id="addAccountIcon">
+                </button>
+            </div>
+
+            <div id="switchAccount" class="button-2">
+                <button class="round-button primary-button">
+                    <img src="icons/user-friends-solid.svg" width="22px" alt="Switch account"
+                        title="Switch account" id="switchAccountIcon">
+                </button>
+            </div>
+
+            <div id="signOut"">
+                <button class="round-button disconnect-button">
+                    <img src="icons/sign-out-alt-solid.svg" width="22px" alt="Sign out" title="Sign out"
+                        id="signOutIcon">
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+<script src="lib/darkreader/darkreader.js"></script>
+<script src="js/gcaltab.js"></script>
+<script src="js/popup.js"></script>
+
+</html>

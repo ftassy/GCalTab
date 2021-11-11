@@ -31,7 +31,7 @@ async function loadScript(scriptName, callback) {
         const script = await gettingScript;
         if(script) {
             callback();
-        }
+        } callback();
     } catch(err) {
         console.log("Script", scriptName, "could not be loaded.");
     }
