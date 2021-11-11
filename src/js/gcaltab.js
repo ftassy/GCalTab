@@ -27,11 +27,11 @@ browser.storage.onChanged.addListener(onGot);
  * */
 async function loadScript(scriptName, callback) {
     try {
-        /*const gettingScript = await scriptName;
+        const gettingScript = await scriptName;
         const script = await gettingScript;
         if(script) {
             callback();
-        }*/ callback();
+        } callback();
     } catch(err) {
         console.log("Script", scriptName, "could not be loaded.");
     }
