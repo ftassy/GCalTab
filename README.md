@@ -101,7 +101,8 @@ GCalTab and its developer are not affiliated, sponsored nor endorsed by any of t
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
-1.2.0 -> Switch from Spectre.css to home-made CSS for popup, upgrade to DarkReader v4.9.40, upgrade to web-ext v6.5.0  
+1.2.1 -> upgrade to web-ext 6.6.0  
+1.2.0 -> switch from Spectre.css to home-made CSS for popup, upgrade to DarkReader v4.9.40, upgrade to web-ext v6.5.0  
 1.1.2 -> upgrade to DarkReader v4.9.35, upgrade to web-ext 6.4.0  
 1.1.1 -> updated indirect dependencies versions due to security fixes  
 1.1.0 -> addition of i18n, upgrade to DarkReader v4.9.33, changed manifest so that DarkReader applies to Keep and Tasks  

@@ -1,6 +1,6 @@
 {
     "name": "gcaltab",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Google Calendar one tab away!",
     "author": "Florent Tassy",
     "license": "MIT",
@@ -23,9 +23,9 @@
         "check-dep": "npm outdated && npm audit"
     },
     "dependencies": {
-        "darkreader": "^4.9.40"
+        "darkreader": "4.9.40"
     },
     "devDependencies": {
-        "web-ext": "^6.5.0"
+        "web-ext": "^6.6.0"
     }
 }
