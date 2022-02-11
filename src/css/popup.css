@@ -3,7 +3,6 @@ body {
     margin: 0em; /* Removes the darker frame around popup when DarkReader is active */
     padding: 1em;
     font-weight: bold;
-    background-color: #dcdcdc;
 }
 
 button {
@@ -152,4 +151,8 @@ hr {
 
 input:checked + .slider:before {
     transform: translateX(1em);
+}
+
+input:checked + .slider {
+    background-color: #6b6be7;
 }
