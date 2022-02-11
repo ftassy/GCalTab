@@ -124,8 +124,11 @@ function onLocalStorageGot(item) {
         if (key === "darkModeGCalTab") {
             let darkMode = item[key];
             modeSwitcher.checked = darkMode;
+            setPopUpColors(darkMode);
+            return;
         }
     }
+    setPopUpColors(false);
 }
 
 /** Function that log error in console.
@@ -144,4 +147,19 @@ function switchMode() {
     browser.storage.local.set({
         "darkModeGCalTab": buttonValue,
     });
+    setPopUpColors(buttonValue);
+}
+
+/** Function that adapts popup background color in light theme
+ * and remove styling in dark them to let DarkReader apply
+ * its colors.
+ * */
+ function setPopUpColors(darkReaderRuns) {
+    if (darkReaderRuns) {
+        document.getElementsByTagName("body")[0].style.backgroundColor = null;
+        modeSwitcherContainer.style.color = null;
+    } else {
+        document.getElementsByTagName("body")[0].style.backgroundColor = "#dcdcdc";
+        modeSwitcherContainer.style.color = "#333333";
+    }
 }
