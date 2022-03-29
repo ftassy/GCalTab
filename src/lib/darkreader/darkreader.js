@@ -1,5 +1,5 @@
 /**
- * Dark Reader v4.9.44
+ * Dark Reader v4.9.46
  * https://darkreader.org/
  */
 
@@ -114,13 +114,12 @@
 
     var MessageType = {
         UI_GET_DATA: 'ui-get-data',
-        UI_GET_ACTIVE_TAB_INFO: 'ui-get-active-tab-info',
         UI_SUBSCRIBE_TO_CHANGES: 'ui-subscribe-to-changes',
         UI_UNSUBSCRIBE_FROM_CHANGES: 'ui-unsubscribe-from-changes',
         UI_CHANGE_SETTINGS: 'ui-change-settings',
         UI_SET_THEME: 'ui-set-theme',
         UI_SET_SHORTCUT: 'ui-set-shortcut',
-        UI_TOGGLE_URL: 'ui-toggle-url',
+        UI_TOGGLE_ACTIVE_TAB: 'ui-toggle-active-tab',
         UI_MARK_NEWS_AS_READ: 'ui-mark-news-as-read',
         UI_LOAD_CONFIG: 'ui-load-config',
         UI_APPLY_DEV_DYNAMIC_THEME_FIXES: 'ui-apply-dev-dynamic-theme-fixes',
@@ -150,6 +149,8 @@
         CS_FRAME_RESUME: 'cs-frame-resume',
         CS_EXPORT_CSS_RESPONSE: 'cs-export-css-response',
         CS_FETCH: 'cs-fetch',
+        CS_DARK_THEME_DETECTED: 'cs-dark-theme-detected',
+        CS_DARK_THEME_NOT_DETECTED: 'cs-dark-theme-not-detected',
     };
 
     var userAgent = typeof navigator === 'undefined' ? 'some useragent' : navigator.userAgent.toLowerCase();
@@ -413,6 +414,7 @@
         styleSystemControls: !isCSSColorSchemePropSupported,
         lightColorScheme: 'Default',
         darkColorScheme: 'Default',
+        immediateModify: false,
     };
 
     function isArrayLike(items) {
@@ -637,12 +639,18 @@
             }
         });
         for (var node = (root.shadowRoot ? walker.currentNode : walker.nextNode()); node != null; node = walker.nextNode()) {
+            if (node.classList.contains('surfingkeys_hints_host')) {
+                continue;
+            }
             iterator(node);
             iterateShadowHosts(node.shadowRoot, iterator);
         }
     }
-    function isDOMReady() {
+    var isDOMReady = function () {
         return document.readyState === 'complete' || document.readyState === 'interactive';
+    };
+    function setIsDOMReady(newFunc) {
+        isDOMReady = newFunc;
     }
     var readyStateListeners = new Set();
     function addDOMReadyListener(listener) {
@@ -917,7 +925,7 @@
         }
     }
     var cssURLRegex = /url\((('.+?')|(".+?")|([^\)]*?))\)/g;
-    var cssImportRegex = /@import\s*(url\()?(('.+?')|(".+?")|([^\)]*?))\)? ?(screen)?;?/g;
+    var cssImportRegex = /@import\s*(url\()?(('.+?')|(".+?")|([^\)]*?))\)? ?(screen)?;?/gi;
     function getCSSURLValue(cssURL) {
         return cssURL.replace(/^url\((.*)\)$/, '$1').trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
     }
@@ -1392,6 +1400,9 @@
         var _b = __read(_a, 2), key = _b[0], value = _b[1];
         return [key.toLowerCase(), value];
     }));
+    function getSRGBLightness(r, g, b) {
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    }
 
     function scale(x, inLow, inHigh, outLow, outHigh) {
         return (x - inLow) * (outHigh - outLow) / (inHigh - inLow) + outLow;
@@ -1714,6 +1725,9 @@
             else {
                 hx = scale(h, 60, 120, 60, 105);
             }
+        }
+        if (hx > 40 && hx < 80) {
+            lx *= 0.75;
         }
         return { h: hx, s: s, l: lx, a: a };
     }
@@ -2050,15 +2064,15 @@
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
                 i = 4 * (y * width + x);
-                r = d[i + 0] / 255;
-                g = d[i + 1] / 255;
-                b = d[i + 2] / 255;
-                a = d[i + 3] / 255;
-                if (a < TRANSPARENT_ALPHA_THRESHOLD) {
+                r = d[i + 0];
+                g = d[i + 1];
+                b = d[i + 2];
+                a = d[i + 3];
+                if (a / 255 < TRANSPARENT_ALPHA_THRESHOLD) {
                     transparentPixelsCount++;
                 }
                 else {
-                    l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                    l = getSRGBLightness(r, g, b);
                     if (l < DARK_LIGHTNESS_THRESHOLD) {
                         darkPixelsCount++;
                     }
@@ -2117,11 +2131,13 @@
                 if (index - possibleType.length >= 0) {
                     var possibleGradient = value.substring(index - possibleType.length, index);
                     if (possibleGradient === possibleType) {
-                        if (index - possibleType.length - 1 >= 9) {
-                            if (value[index - possibleType.length - 1] === '-') {
-                                typeGradient = "repeating-".concat(possibleType, "gradient");
-                                return true;
-                            }
+                        if (value.slice(index - possibleType.length - 10, index - possibleType.length - 1) === 'repeating') {
+                            typeGradient = "repeating-".concat(possibleType, "gradient");
+                            return true;
+                        }
+                        if (value.slice(index - possibleType.length - 8, index - possibleType.length - 1) === '-webkit') {
+                            typeGradient = "-webkit-".concat(possibleType, "gradient");
+                            return true;
                         }
                         typeGradient = "".concat(possibleType, "gradient");
                         return true;
@@ -2572,7 +2588,21 @@
                 if (results.some(function (r) { return r instanceof Promise; })) {
                     return Promise.all(results)
                         .then(function (asyncResults) {
-                        return asyncResults.join('');
+                        var result = '';
+                        var lastWasURL = false;
+                        asyncResults.filter(Boolean).forEach(function (asyncResult) {
+                            if (lastWasURL) {
+                                if (asyncResult) {
+                                    result += ', ';
+                                }
+                                lastWasURL = false;
+                            }
+                            result += asyncResult;
+                            if (asyncResult.startsWith('url(')) {
+                                lastWasURL = true;
+                            }
+                        });
+                        return result;
                     });
                 }
                 return results.join('');
@@ -4814,9 +4844,13 @@
             var _this = this;
             var getCurrentValue = function () {
                 var docSheets = documentStyleSheetsDescriptor.get.call(_this);
-                return Object.setPrototypeOf(__spreadArray([], __read(docSheets), false).filter(function (styleSheet) {
+                var filteredSheets = __spreadArray([], __read(docSheets), false).filter(function (styleSheet) {
                     return !styleSheet.ownerNode.classList.contains('darkreader');
-                }), StyleSheetList.prototype);
+                });
+                filteredSheets.item = function (item) {
+                    return filteredSheets[item];
+                };
+                return Object.setPrototypeOf(filteredSheets, StyleSheetList.prototype);
             };
             var elements = getCurrentValue();
             var styleSheetListBehavior = {
@@ -4841,7 +4875,7 @@
             var elements = getCurrentElementValue();
             var nodeListBehavior = {
                 get: function (_, property) {
-                    return getCurrentElementValue()[Number(property)];
+                    return getCurrentElementValue()[Number(property) || property];
                 }
             };
             elements = new Proxy(elements, nodeListBehavior);
@@ -4917,20 +4951,16 @@
         document.head.insertBefore(textStyle, fallbackStyle.nextSibling);
         setupNodePositionWatcher(textStyle, 'text');
         var invertStyle = createOrUpdateStyle('darkreader--invert');
-        var invertStyleContent = '';
         if (fixes && Array.isArray(fixes.invert) && fixes.invert.length > 0) {
-            invertStyleContent += [
+            invertStyle.textContent = [
                 "".concat(fixes.invert.join(', '), " {"),
                 "    filter: ".concat(getCSSFilterValue(__assign(__assign({}, filter), { contrast: filter.mode === 0 ? filter.contrast : clamp(filter.contrast - 10, 0, 100) })), " !important;"),
                 '}',
-                '',
             ].join('\n');
         }
-        var imageFilter = getCSSFilterValue(__assign(__assign({}, filter), { mode: FilterMode.light }));
-        if (imageFilter) {
-            invertStyleContent += "img { filter: ".concat(imageFilter, " !important;\n");
+        else {
+            invertStyle.textContent = '';
         }
-        invertStyle.textContent = invertStyleContent;
         document.head.insertBefore(invertStyle, textStyle.nextSibling);
         setupNodePositionWatcher(invertStyle, 'invert');
         var inlineStyle = createOrUpdateStyle('darkreader--inline');
@@ -5119,7 +5149,7 @@
             createDynamicStyleOverrides();
             watchForUpdates();
         }
-        if (document.hidden) {
+        if (document.hidden && !filter.immediateModify) {
             watchForDocumentVisibility(runDynamicStyle);
         }
         else {
@@ -5216,6 +5246,11 @@
         else {
             ignoredImageAnalysisSelectors = [];
             ignoredInlineSelectors = [];
+        }
+        if (filter.immediateModify) {
+            setIsDOMReady(function () {
+                return true;
+            });
         }
         isIFrame$1 = iframe;
         if (document.head) {
