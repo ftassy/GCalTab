@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD
  * Dark Reader v4.9.44
+=======
+ * Dark Reader v4.9.46
+>>>>>>> dev
  * https://darkreader.org/
  */
 
@@ -114,13 +118,20 @@
 
     var MessageType = {
         UI_GET_DATA: 'ui-get-data',
+<<<<<<< HEAD
         UI_GET_ACTIVE_TAB_INFO: 'ui-get-active-tab-info',
+=======
+>>>>>>> dev
         UI_SUBSCRIBE_TO_CHANGES: 'ui-subscribe-to-changes',
         UI_UNSUBSCRIBE_FROM_CHANGES: 'ui-unsubscribe-from-changes',
         UI_CHANGE_SETTINGS: 'ui-change-settings',
         UI_SET_THEME: 'ui-set-theme',
         UI_SET_SHORTCUT: 'ui-set-shortcut',
+<<<<<<< HEAD
         UI_TOGGLE_URL: 'ui-toggle-url',
+=======
+        UI_TOGGLE_ACTIVE_TAB: 'ui-toggle-active-tab',
+>>>>>>> dev
         UI_MARK_NEWS_AS_READ: 'ui-mark-news-as-read',
         UI_LOAD_CONFIG: 'ui-load-config',
         UI_APPLY_DEV_DYNAMIC_THEME_FIXES: 'ui-apply-dev-dynamic-theme-fixes',
@@ -150,6 +161,11 @@
         CS_FRAME_RESUME: 'cs-frame-resume',
         CS_EXPORT_CSS_RESPONSE: 'cs-export-css-response',
         CS_FETCH: 'cs-fetch',
+<<<<<<< HEAD
+=======
+        CS_DARK_THEME_DETECTED: 'cs-dark-theme-detected',
+        CS_DARK_THEME_NOT_DETECTED: 'cs-dark-theme-not-detected',
+>>>>>>> dev
     };
 
     var userAgent = typeof navigator === 'undefined' ? 'some useragent' : navigator.userAgent.toLowerCase();
@@ -413,6 +429,10 @@
         styleSystemControls: !isCSSColorSchemePropSupported,
         lightColorScheme: 'Default',
         darkColorScheme: 'Default',
+<<<<<<< HEAD
+=======
+        immediateModify: false,
+>>>>>>> dev
     };
 
     function isArrayLike(items) {
@@ -637,12 +657,26 @@
             }
         });
         for (var node = (root.shadowRoot ? walker.currentNode : walker.nextNode()); node != null; node = walker.nextNode()) {
+<<<<<<< HEAD
+=======
+            if (node.classList.contains('surfingkeys_hints_host')) {
+                continue;
+            }
+>>>>>>> dev
             iterator(node);
             iterateShadowHosts(node.shadowRoot, iterator);
         }
     }
+<<<<<<< HEAD
     function isDOMReady() {
         return document.readyState === 'complete' || document.readyState === 'interactive';
+=======
+    var isDOMReady = function () {
+        return document.readyState === 'complete' || document.readyState === 'interactive';
+    };
+    function setIsDOMReady(newFunc) {
+        isDOMReady = newFunc;
+>>>>>>> dev
     }
     var readyStateListeners = new Set();
     function addDOMReadyListener(listener) {
@@ -917,7 +951,11 @@
         }
     }
     var cssURLRegex = /url\((('.+?')|(".+?")|([^\)]*?))\)/g;
+<<<<<<< HEAD
     var cssImportRegex = /@import\s*(url\()?(('.+?')|(".+?")|([^\)]*?))\)? ?(screen)?;?/g;
+=======
+    var cssImportRegex = /@import\s*(url\()?(('.+?')|(".+?")|([^\)]*?))\)? ?(screen)?;?/gi;
+>>>>>>> dev
     function getCSSURLValue(cssURL) {
         return cssURL.replace(/^url\((.*)\)$/, '$1').trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
     }
@@ -1357,6 +1395,7 @@
         whitesmoke: 0xf5f5f5,
         yellow: 0xffff00,
         yellowgreen: 0x9acd32,
+<<<<<<< HEAD
     }));
     var systemColors = new Map(Object.entries({
         ActiveBorder: 0x3b99fc,
@@ -1500,6 +1539,154 @@
         return null;
     }
 
+=======
+    }));
+    var systemColors = new Map(Object.entries({
+        ActiveBorder: 0x3b99fc,
+        ActiveCaption: 0x000000,
+        AppWorkspace: 0xaaaaaa,
+        Background: 0x6363ce,
+        ButtonFace: 0xffffff,
+        ButtonHighlight: 0xe9e9e9,
+        ButtonShadow: 0x9fa09f,
+        ButtonText: 0x000000,
+        CaptionText: 0x000000,
+        GrayText: 0x7f7f7f,
+        Highlight: 0xb2d7ff,
+        HighlightText: 0x000000,
+        InactiveBorder: 0xffffff,
+        InactiveCaption: 0xffffff,
+        InactiveCaptionText: 0x000000,
+        InfoBackground: 0xfbfcc5,
+        InfoText: 0x000000,
+        Menu: 0xf6f6f6,
+        MenuText: 0xffffff,
+        Scrollbar: 0xaaaaaa,
+        ThreeDDarkShadow: 0x000000,
+        ThreeDFace: 0xc0c0c0,
+        ThreeDHighlight: 0xffffff,
+        ThreeDLightShadow: 0xffffff,
+        ThreeDShadow: 0x000000,
+        Window: 0xececec,
+        WindowFrame: 0xaaaaaa,
+        WindowText: 0x000000,
+        '-webkit-focus-ring-color': 0xe59700
+    }).map(function (_a) {
+        var _b = __read(_a, 2), key = _b[0], value = _b[1];
+        return [key.toLowerCase(), value];
+    }));
+    function getSRGBLightness(r, g, b) {
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    }
+
+    function scale(x, inLow, inHigh, outLow, outHigh) {
+        return (x - inLow) * (outHigh - outLow) / (inHigh - inLow) + outLow;
+    }
+    function clamp(x, min, max) {
+        return Math.min(max, Math.max(min, x));
+    }
+    function multiplyMatrices(m1, m2) {
+        var result = [];
+        for (var i = 0, len = m1.length; i < len; i++) {
+            result[i] = [];
+            for (var j = 0, len2 = m2[0].length; j < len2; j++) {
+                var sum = 0;
+                for (var k = 0, len3 = m1[0].length; k < len3; k++) {
+                    sum += m1[i][k] * m2[k][j];
+                }
+                result[i][j] = sum;
+            }
+        }
+        return result;
+    }
+
+    function getMatches(regex, input, group) {
+        if (group === void 0) { group = 0; }
+        var matches = [];
+        var m;
+        while ((m = regex.exec(input))) {
+            matches.push(m[group]);
+        }
+        return matches;
+    }
+    function formatCSS(text) {
+        function trimLeft(text) {
+            return text.replace(/^\s+/, '');
+        }
+        function getIndent(depth) {
+            if (depth === 0) {
+                return '';
+            }
+            return ' '.repeat(4 * depth);
+        }
+        if (text.length < 50000) {
+            var emptyRuleRegexp = /[^{}]+{\s*}/;
+            while (emptyRuleRegexp.test(text)) {
+                text = text.replace(emptyRuleRegexp, '');
+            }
+        }
+        var css = (text
+            .replace(/\s{2,}/g, ' ')
+            .replace(/\{/g, '{\n')
+            .replace(/\}/g, '\n}\n')
+            .replace(/\;(?![^\(|\"]*(\)|\"))/g, ';\n')
+            .replace(/\,(?![^\(|\"]*(\)|\"))/g, ',\n')
+            .replace(/\n\s*\n/g, '\n')
+            .split('\n'));
+        var depth = 0;
+        var formatted = [];
+        for (var x = 0, len = css.length; x < len; x++) {
+            var line = "".concat(css[x], "\n");
+            if (line.includes('{')) {
+                formatted.push(getIndent(depth++) + trimLeft(line));
+            }
+            else if (line.includes('\}')) {
+                formatted.push(getIndent(--depth) + trimLeft(line));
+            }
+            else {
+                formatted.push(getIndent(depth) + trimLeft(line));
+            }
+        }
+        return formatted.join('').trim();
+    }
+    function getParenthesesRange(input, searchStartIndex) {
+        if (searchStartIndex === void 0) { searchStartIndex = 0; }
+        var length = input.length;
+        var depth = 0;
+        var firstOpenIndex = -1;
+        for (var i = searchStartIndex; i < length; i++) {
+            if (depth === 0) {
+                var openIndex = input.indexOf('(', i);
+                if (openIndex < 0) {
+                    break;
+                }
+                firstOpenIndex = openIndex;
+                depth++;
+                i = openIndex;
+            }
+            else {
+                var closingIndex = input.indexOf(')', i);
+                if (closingIndex < 0) {
+                    break;
+                }
+                var openIndex = input.indexOf('(', i);
+                if (openIndex < 0 || closingIndex < openIndex) {
+                    depth--;
+                    if (depth === 0) {
+                        return { start: firstOpenIndex, end: closingIndex + 1 };
+                    }
+                    i = closingIndex;
+                }
+                else {
+                    depth++;
+                    i = openIndex;
+                }
+            }
+        }
+        return null;
+    }
+
+>>>>>>> dev
     function createFilterMatrix(config) {
         var m = Matrix.identity();
         if (config.sepia !== 0) {
@@ -1715,6 +1902,12 @@
                 hx = scale(h, 60, 120, 60, 105);
             }
         }
+<<<<<<< HEAD
+=======
+        if (hx > 40 && hx < 80) {
+            lx *= 0.75;
+        }
+>>>>>>> dev
         return { h: hx, s: s, l: lx, a: a };
     }
     function modifyBackgroundColor(rgb, theme) {
@@ -2050,6 +2243,7 @@
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
                 i = 4 * (y * width + x);
+<<<<<<< HEAD
                 r = d[i + 0] / 255;
                 g = d[i + 1] / 255;
                 b = d[i + 2] / 255;
@@ -2059,6 +2253,17 @@
                 }
                 else {
                     l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+=======
+                r = d[i + 0];
+                g = d[i + 1];
+                b = d[i + 2];
+                a = d[i + 3];
+                if (a / 255 < TRANSPARENT_ALPHA_THRESHOLD) {
+                    transparentPixelsCount++;
+                }
+                else {
+                    l = getSRGBLightness(r, g, b);
+>>>>>>> dev
                     if (l < DARK_LIGHTNESS_THRESHOLD) {
                         darkPixelsCount++;
                     }
@@ -2117,11 +2322,21 @@
                 if (index - possibleType.length >= 0) {
                     var possibleGradient = value.substring(index - possibleType.length, index);
                     if (possibleGradient === possibleType) {
+<<<<<<< HEAD
                         if (index - possibleType.length - 1 >= 9) {
                             if (value[index - possibleType.length - 1] === '-') {
                                 typeGradient = "repeating-".concat(possibleType, "gradient");
                                 return true;
                             }
+=======
+                        if (value.slice(index - possibleType.length - 10, index - possibleType.length - 1) === 'repeating') {
+                            typeGradient = "repeating-".concat(possibleType, "gradient");
+                            return true;
+                        }
+                        if (value.slice(index - possibleType.length - 8, index - possibleType.length - 1) === '-webkit') {
+                            typeGradient = "-webkit-".concat(possibleType, "gradient");
+                            return true;
+>>>>>>> dev
                         }
                         typeGradient = "".concat(possibleType, "gradient");
                         return true;
@@ -2572,7 +2787,25 @@
                 if (results.some(function (r) { return r instanceof Promise; })) {
                     return Promise.all(results)
                         .then(function (asyncResults) {
+<<<<<<< HEAD
                         return asyncResults.join('');
+=======
+                        var result = '';
+                        var lastWasURL = false;
+                        asyncResults.filter(Boolean).forEach(function (asyncResult) {
+                            if (lastWasURL) {
+                                if (asyncResult) {
+                                    result += ', ';
+                                }
+                                lastWasURL = false;
+                            }
+                            result += asyncResult;
+                            if (asyncResult.startsWith('url(')) {
+                                lastWasURL = true;
+                            }
+                        });
+                        return result;
+>>>>>>> dev
                     });
                 }
                 return results.join('');
@@ -4814,9 +5047,19 @@
             var _this = this;
             var getCurrentValue = function () {
                 var docSheets = documentStyleSheetsDescriptor.get.call(_this);
+<<<<<<< HEAD
                 return Object.setPrototypeOf(__spreadArray([], __read(docSheets), false).filter(function (styleSheet) {
                     return !styleSheet.ownerNode.classList.contains('darkreader');
                 }), StyleSheetList.prototype);
+=======
+                var filteredSheets = __spreadArray([], __read(docSheets), false).filter(function (styleSheet) {
+                    return !styleSheet.ownerNode.classList.contains('darkreader');
+                });
+                filteredSheets.item = function (item) {
+                    return filteredSheets[item];
+                };
+                return Object.setPrototypeOf(filteredSheets, StyleSheetList.prototype);
+>>>>>>> dev
             };
             var elements = getCurrentValue();
             var styleSheetListBehavior = {
@@ -4841,7 +5084,11 @@
             var elements = getCurrentElementValue();
             var nodeListBehavior = {
                 get: function (_, property) {
+<<<<<<< HEAD
                     return getCurrentElementValue()[Number(property)];
+=======
+                    return getCurrentElementValue()[Number(property) || property];
+>>>>>>> dev
                 }
             };
             elements = new Proxy(elements, nodeListBehavior);
@@ -4917,6 +5164,7 @@
         document.head.insertBefore(textStyle, fallbackStyle.nextSibling);
         setupNodePositionWatcher(textStyle, 'text');
         var invertStyle = createOrUpdateStyle('darkreader--invert');
+<<<<<<< HEAD
         var invertStyleContent = '';
         if (fixes && Array.isArray(fixes.invert) && fixes.invert.length > 0) {
             invertStyleContent += [
@@ -4931,6 +5179,18 @@
             invertStyleContent += "img { filter: ".concat(imageFilter, " !important;\n");
         }
         invertStyle.textContent = invertStyleContent;
+=======
+        if (fixes && Array.isArray(fixes.invert) && fixes.invert.length > 0) {
+            invertStyle.textContent = [
+                "".concat(fixes.invert.join(', '), " {"),
+                "    filter: ".concat(getCSSFilterValue(__assign(__assign({}, filter), { contrast: filter.mode === 0 ? filter.contrast : clamp(filter.contrast - 10, 0, 100) })), " !important;"),
+                '}',
+            ].join('\n');
+        }
+        else {
+            invertStyle.textContent = '';
+        }
+>>>>>>> dev
         document.head.insertBefore(invertStyle, textStyle.nextSibling);
         setupNodePositionWatcher(invertStyle, 'invert');
         var inlineStyle = createOrUpdateStyle('darkreader--inline');
@@ -5119,7 +5379,11 @@
             createDynamicStyleOverrides();
             watchForUpdates();
         }
+<<<<<<< HEAD
         if (document.hidden) {
+=======
+        if (document.hidden && !filter.immediateModify) {
+>>>>>>> dev
             watchForDocumentVisibility(runDynamicStyle);
         }
         else {
@@ -5217,6 +5481,14 @@
             ignoredImageAnalysisSelectors = [];
             ignoredInlineSelectors = [];
         }
+<<<<<<< HEAD
+=======
+        if (filter.immediateModify) {
+            setIsDOMReady(function () {
+                return true;
+            });
+        }
+>>>>>>> dev
         isIFrame$1 = iframe;
         if (document.head) {
             if (isAnotherDarkReaderInstanceActive()) {
