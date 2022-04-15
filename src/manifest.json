@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "GCalTab",
     "description": "Google Calendar one tab away!",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "author": "Florent Tassy",
     "homepage_url": "https://github.com/ftassy/GCalTab",
     "default_locale": "en",
