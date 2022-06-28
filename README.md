@@ -1,4 +1,4 @@
-<p align="center"><img src="src/icons/gcaltab.png" alt="GCalTab icon menu"></p>
+<p align="center"><img src="public/icons/gcaltab.png" alt="GCalTab icon menu"></p>
 
 # GCalTab 
 GCalTab is a Thunderbird add-on that opens Google Calendar website in a Thunderbird tab. It facilitates multiple accounts management.
@@ -80,10 +80,10 @@ If you wish to connect to a new account, this can be done by clicking the "Add a
 
 ## Build from source
 
-The add-on can be built by running the following command from its root directory:  
+Building the add-on fron source requires to have a working [Node.js](https://nodejs.org). In addition, some of the package.json scripts would work only in a "*nix" environment. The add-on can be built by running the following command from its root directory:  
 ```
 npm ci
-npm run build
+npm run buildAddon
 ```
 
 ## Legal notice
@@ -93,6 +93,7 @@ GNU is a registered trademark of the Free Software Foundation.
 Linux is a registered trademark of Linus Torvalds.  
 Windows is a registered trademark of Microsoft Corporation.  
 macOS is a registered trademark of Apple Inc.  
+Node.js is a trademark of the OpenJS Foundation.  
 
 The above-mentioned trademarks are only used to refer to products.  
 GCalTab and its developer are not affiliated, sponsored nor endorsed by any of the above-mentioned organizations.  
@@ -101,6 +102,7 @@ GCalTab and its developer are not affiliated, sponsored nor endorsed by any of t
 GCalTab uses Font Awesome icons available under [Creative Commons Attribution 4.0 International license](https://fontawesome.com/license)
 
 ## Changelog
+2.0.0 -> complete re-write using [Svelte](https://svelte.dev/) and [TypeScript](https://www.typescriptlang.org/), upgrade to DarkReader v4.9.51, upgrade to web-ext 7.1.0, remove "storage" permission that was unnecessary.  
 1.2.4 -> override indirect dev dependency to fix security issue   
 1.2.3 -> upgrade to DarkReader v4.9.46, upgrade to web-ext 6.8.0  
 1.2.2 -> upgrade to DarkReader v4.9.44, upgrade to web-ext 6.7.0, popup style adjustments  
