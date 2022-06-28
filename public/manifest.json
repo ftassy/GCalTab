@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "GCalTab",
     "description": "Google Calendar one tab away!",
-    "version": "1.2.4",
+    "version": "2.0.0",
     "author": "Florent Tassy",
     "homepage_url": "https://github.com/ftassy/GCalTab",
     "default_locale": "en",
@@ -45,10 +45,12 @@
                 "https://fonts.googleapis.com/*"
             ],
             "js": [
-                "lib/darkreader/darkreader.js",
-                "js/gcaltab.js"
+                "build/darkreader-wrapper.js"
             ],
             "all_frames": true
         }
-    ]
+    ],
+    "background": {
+        "scripts": ["build/darkreader-wrapper.js"]
+    }
 }
